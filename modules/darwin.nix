@@ -46,7 +46,9 @@ in
         "${pkgs.brave}/Applications/Brave Browser.app"
         "${pkgs.vscode}/Applications/Visual Studio Code.app"
         "${pkgs.kitty}/Applications/Kitty.app"
+        "/Users/weeblet/Applications/Brave Browser Apps.localized/Subspace.app"
         "${pkgs.discord}/Applications/Discord.app"
+        "/Users/weeblet/Applications/WhatsApp Web.app"
       ];
     };
 

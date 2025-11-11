@@ -46,7 +46,8 @@
     direnv     # Per-directory environments
     nix-direnv # Faster direnv with Nix
 
-    # Package managers
+    # Package managers & runtimes
+    nodejs     # Node.js runtime (includes npm)
     bun        # Fast JavaScript runtime & package manager
     pnpm       # Fast, disk space efficient package manager
   ];

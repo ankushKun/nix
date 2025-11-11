@@ -58,9 +58,7 @@ fi
 
 alias zshconfig="$EDITOR ~/.zshrc"
 alias icloud="cd /Users/$(whoami)/Library/Mobile\ Documents/com~apple~CloudDocs"
-alias v=nvim
 alias sv=sudo\ nvim
-alias nv=neovide\ --multigrid\ --frame\ none
 alias lv=lvim
 alias sshk="kitty +kitten ssh"
 

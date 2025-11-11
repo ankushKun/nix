@@ -64,9 +64,9 @@ in
     # Shell aliases - modern alternatives
     shellAliases = {
       # Editor aliases
-      vim = "lvim";
-      vi = "lvim";
-      nvim = "lvim";
+      # vim, vi, and nvim now use regular Neovim
+      # Use 'lvim' or 'lv' to open LunarVim
+      lv = "lvim";
 
       # Better ls (eza)
       ls = "eza --icons --group-directories-first";
@@ -95,6 +95,9 @@ in
       gco = "git checkout";
       gb = "git branch";
       lg = "lazygit";
+
+      # Nix Darwin aliases
+      dr = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
     };
   };
 
@@ -132,7 +135,7 @@ in
 
   # Environment variables
   home.sessionVariables = {
-    EDITOR = "lvim";
-    VISUAL = "lvim";
+    EDITOR = "nvim";
+    VISUAL = "nvim";
   };
 }

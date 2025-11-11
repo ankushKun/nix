@@ -246,7 +246,7 @@ lvim.plugins = {
     "rcarriga/nvim-notify",
     config = function()
       require("notify").setup({
-        background_colour = "#000000",
+        background_colour = "#00000000",  -- Fully transparent
         fps = 60,
         icons = {
           DEBUG = "",
@@ -316,13 +316,15 @@ lvim.plugins = {
           default_prompt = "➤ ",
           border = "rounded",
           win_options = {
-            winblend = 0,
+            winblend = 10,  -- Add transparency
           },
         },
         select = {
           enabled = true,
           backend = { "telescope", "builtin" },
-          telescope = require("telescope.themes").get_dropdown(),
+          telescope = require("telescope.themes").get_dropdown({
+            winblend = 10,  -- Add transparency to dropdown
+          }),
         },
       })
     end
@@ -429,7 +431,7 @@ lvim.plugins = {
         hi_parameter = "LspSignatureActiveParameter",
         floating_window = true,
         floating_window_above_cur_line = true,
-        transparency = 10,
+        transparency = 100,  -- Fully transparent (0-100 scale, higher = more transparent)
         toggle_key = "<C-k>",
         select_signature_key = "<M-n>",
         move_cursor_key = nil,
@@ -580,8 +582,7 @@ lvim.plugins = {
         size = 20,
         open_mapping = [[<c-\>]],
         hide_numbers = true,
-        shade_terminals = true,
-        shading_factor = 2,
+        shade_terminals = false,  -- Disable shading for transparency
         start_in_insert = true,
         insert_mappings = true,
         persist_size = true,
@@ -590,7 +591,7 @@ lvim.plugins = {
         shell = vim.o.shell,
         float_opts = {
           border = "curved",
-          winblend = 0,
+          winblend = 10,  -- Add transparency
           highlights = {
             border = "Normal",
             background = "Normal",
