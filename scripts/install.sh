@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 # Configuration
 REPO_URL="git@github.com:ankushKun/nix.git"
 INSTALL_DIR="$HOME/.config/nix"
-FLAKE_NAME="simple"
+FLAKE_NAME="weeblets-mbp"
 
 echo -e "${BLUE}╔════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║   Nix Darwin Configuration Installer      ║${NC}"

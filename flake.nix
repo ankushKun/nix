@@ -18,8 +18,8 @@
     }:
     {
       # Build darwin flake using:
-      # $ darwin-rebuild switch --flake .#simple
-      darwinConfigurations."simple" = nix-darwin.lib.darwinSystem {
+      # $ darwin-rebuild switch --flake .#weeblets-mbp
+      darwinConfigurations."weeblets-mbp" = nix-darwin.lib.darwinSystem {
         modules = [
           # Import darwin-specific configuration
           ./modules/darwin.nix
