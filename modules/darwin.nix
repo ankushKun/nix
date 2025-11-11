@@ -58,6 +58,27 @@ in
       ShowStatusBar = true;
     };
 
+    # Custom user preferences
+    CustomUserPreferences = {
+      "com.apple.finder" = {
+        # Finder sidebar favorites
+        FXPreferredGroupBy = "Kind";
+        ShowExternalHardDrivesOnDesktop = true;
+        ShowHardDrivesOnDesktop = false;
+        ShowMountedServersOnDesktop = true;
+        ShowRemovableMediaOnDesktop = true;
+      };
+      "com.apple.sidebarlists" = {
+        # Sidebar favorites configuration
+        systemitems = {
+          ShowEjectables = true;
+          ShowHardDisks = true;
+          ShowRemovable = true;
+          ShowServers = true;
+        };
+      };
+    };
+
     # Login window settings
     loginwindow = {
       GuestEnabled = false;
