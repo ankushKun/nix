@@ -140,19 +140,64 @@ else
         mkdir -p "$HOME/.ssh"
         chmod 700 "$HOME/.ssh"
 
-        # Generate SSH key
-        ssh-keygen -t ed25519 -C "$GITHUB_EMAIL" -f "$SSH_KEY_PATH" -N ""
+        # Ask about passphrase
+        echo ""
+        echo -e "${YELLOW}GitHub recommends protecting your SSH key with a passphrase${NC}"
+        read -p "Do you want to set a passphrase? (y/n) " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            # Generate SSH key with passphrase prompt
+            ssh-keygen -t ed25519 -C "$GITHUB_EMAIL" -f "$SSH_KEY_PATH"
+            USE_KEYCHAIN=true
+        else
+            # Generate SSH key without passphrase
+            ssh-keygen -t ed25519 -C "$GITHUB_EMAIL" -f "$SSH_KEY_PATH" -N ""
+            USE_KEYCHAIN=false
+        fi
 
         print_success "SSH key generated at $SSH_KEY_PATH"
         SSH_KEY_EXISTS=true
+
+        # Configure SSH config file
+        print_status "Configuring SSH config..."
+        SSH_CONFIG="$HOME/.ssh/config"
+
+        # Create config file if it doesn't exist
+        touch "$SSH_CONFIG"
+        chmod 600 "$SSH_CONFIG"
+
+        # Check if github.com host already exists in config
+        if grep -q "^Host github.com" "$SSH_CONFIG"; then
+            print_warning "GitHub host already configured in SSH config"
+        else
+            # Add GitHub SSH configuration
+            cat >> "$SSH_CONFIG" << EOF
+
+Host github.com
+  AddKeysToAgent yes
+  UseKeychain yes
+  IdentityFile $SSH_KEY_PATH
+EOF
+            print_success "SSH config updated"
+        fi
     fi
 fi
 
 # Add SSH key to ssh-agent if it exists
 if [ "$SSH_KEY_EXISTS" = true ]; then
-    print_status "Adding SSH key to ssh-agent..."
+    print_status "Starting ssh-agent and adding key..."
+
+    # Start ssh-agent
     eval "$(ssh-agent -s)" > /dev/null
-    ssh-add "$SSH_KEY_PATH" 2>/dev/null
+
+    # Add SSH key to ssh-agent with keychain support
+    # Try --apple-use-keychain first (newer macOS), fall back to -K (older macOS)
+    if ssh-add --help 2>&1 | grep -q "apple-use-keychain"; then
+        ssh-add --apple-use-keychain "$SSH_KEY_PATH" 2>/dev/null
+    else
+        ssh-add -K "$SSH_KEY_PATH" 2>/dev/null
+    fi
+
     print_success "SSH key added to ssh-agent"
 fi
 
