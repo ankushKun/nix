@@ -45,7 +45,28 @@ fi
 
 print_success "Running on macOS"
 
-# Step 1: Check if Nix is already installed
+# Step 1: Check and install Xcode Command Line Tools
+print_status "Checking for Xcode Command Line Tools..."
+if xcode-select -p &> /dev/null; then
+    print_success "Xcode Command Line Tools already installed"
+else
+    print_warning "Xcode Command Line Tools not found"
+    print_status "Installing Xcode Command Line Tools..."
+    echo -e "${YELLOW}A dialog will appear - please click 'Install' and wait for completion${NC}"
+
+    # Trigger the installation
+    xcode-select --install &> /dev/null || true
+
+    # Wait for installation to complete
+    echo -e "${YELLOW}Waiting for Xcode Command Line Tools installation...${NC}"
+    until xcode-select -p &> /dev/null; do
+        sleep 5
+    done
+
+    print_success "Xcode Command Line Tools installed successfully"
+fi
+
+# Step 2: Check if Nix is already installed
 print_status "Checking for Nix installation..."
 if command -v nix &> /dev/null; then
     print_success "Nix is already installed"
@@ -55,7 +76,7 @@ else
     NIX_ALREADY_INSTALLED=false
 fi
 
-# Step 2: Install Nix if not present
+# Step 3: Install Nix if not present
 if [ "$NIX_ALREADY_INSTALLED" = false ]; then
     print_status "Installing Nix (multi-user installation)..."
     echo -e "${YELLOW}This will require sudo access${NC}"
@@ -78,7 +99,7 @@ else
     fi
 fi
 
-# Step 3: Configure Nix for flakes
+# Step 4: Configure Nix for flakes
 print_status "Configuring Nix for flakes and nix-command..."
 
 NIX_CONF_DIR="$HOME/.config/nix"
@@ -96,29 +117,86 @@ else
     print_success "Created nix.conf with flakes enabled"
 fi
 
-# Step 4: Check for SSH access to GitHub
+# Step 5: Check for SSH keys and GitHub access
+print_status "Checking for SSH keys..."
+
+SSH_KEY_PATH="$HOME/.ssh/id_ed25519"
+SSH_KEY_EXISTS=false
+
+if [ -f "$SSH_KEY_PATH" ]; then
+    print_success "SSH key found at $SSH_KEY_PATH"
+    SSH_KEY_EXISTS=true
+else
+    print_warning "No SSH key found"
+    read -p "Generate SSH key now? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        print_status "Generating SSH key..."
+
+        # Get email for SSH key
+        read -p "Enter your GitHub email: " GITHUB_EMAIL
+
+        # Create .ssh directory if it doesn't exist
+        mkdir -p "$HOME/.ssh"
+        chmod 700 "$HOME/.ssh"
+
+        # Generate SSH key
+        ssh-keygen -t ed25519 -C "$GITHUB_EMAIL" -f "$SSH_KEY_PATH" -N ""
+
+        print_success "SSH key generated at $SSH_KEY_PATH"
+        SSH_KEY_EXISTS=true
+    fi
+fi
+
+# Add SSH key to ssh-agent if it exists
+if [ "$SSH_KEY_EXISTS" = true ]; then
+    print_status "Adding SSH key to ssh-agent..."
+    eval "$(ssh-agent -s)" > /dev/null
+    ssh-add "$SSH_KEY_PATH" 2>/dev/null
+    print_success "SSH key added to ssh-agent"
+fi
+
+# Check GitHub SSH access
 print_status "Checking SSH access to GitHub..."
 if ssh -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
     print_success "GitHub SSH access confirmed"
     USE_SSH=true
 else
-    print_warning "SSH access to GitHub not configured"
-    echo -e "${YELLOW}You can either:${NC}"
-    echo "  1. Set up SSH keys now (recommended)"
-    echo "  2. Use HTTPS to clone (will be asked for credentials)"
-    read -p "Use HTTPS instead of SSH? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if [ "$SSH_KEY_EXISTS" = true ]; then
+        print_warning "SSH key exists but not added to GitHub yet"
+        echo ""
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo -e "${YELLOW}Please add this SSH public key to your GitHub account:${NC}"
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+        cat "$SSH_KEY_PATH.pub"
+        echo ""
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+        echo ""
+        echo -e "${BLUE}Steps to add SSH key to GitHub:${NC}"
+        echo "  1. Copy the key above"
+        echo "  2. Go to: https://github.com/settings/ssh/new"
+        echo "  3. Paste the key and click 'Add SSH key'"
+        echo ""
+
+        # Copy to clipboard if pbcopy is available
+        if command -v pbcopy &> /dev/null; then
+            cat "$SSH_KEY_PATH.pub" | pbcopy
+            print_success "SSH key copied to clipboard!"
+        fi
+
+        echo -e "${YELLOW}For now, we'll use HTTPS to clone the repository${NC}"
         REPO_URL="https://github.com/ankushKun/nix.git"
         USE_SSH=false
     else
-        print_error "Please set up SSH keys and run this script again"
-        echo "See: https://docs.github.com/en/authentication/connecting-to-github-with-ssh"
-        exit 1
+        print_warning "SSH access to GitHub not configured"
+        echo -e "${YELLOW}Using HTTPS to clone the repository${NC}"
+        REPO_URL="https://github.com/ankushKun/nix.git"
+        USE_SSH=false
     fi
 fi
 
-# Step 5: Clone or update repository
+# Step 6: Clone or update repository
 if [ -d "$INSTALL_DIR/.git" ]; then
     print_status "Configuration directory already exists"
     read -p "Do you want to pull latest changes? (y/n) " -n 1 -r
@@ -133,10 +211,18 @@ else
 
     # Check if directory exists and has files other than nix.conf
     if [ -d "$INSTALL_DIR" ]; then
-        # Count files excluding nix.conf
-        FILE_COUNT=$(find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 ! -name "nix.conf" | wc -l | tr -d ' ')
+        # Check for files other than nix.conf using bash built-ins
+        HAS_OTHER_FILES=false
+        shopt -s nullglob dotglob
+        for item in "$INSTALL_DIR"/*; do
+            if [ "$(basename "$item")" != "nix.conf" ]; then
+                HAS_OTHER_FILES=true
+                break
+            fi
+        done
+        shopt -u nullglob dotglob
 
-        if [ "$FILE_COUNT" -gt 0 ]; then
+        if [ "$HAS_OTHER_FILES" = true ]; then
             print_error "Directory $INSTALL_DIR exists and contains files"
             print_warning "Please backup or remove it first"
             exit 1
@@ -165,7 +251,7 @@ else
     fi
 fi
 
-# Step 6: Check hostname
+# Step 7: Check hostname
 print_status "Checking system hostname..."
 CURRENT_HOSTNAME=$(scutil --get ComputerName 2>/dev/null || hostname)
 print_warning "Current hostname: $CURRENT_HOSTNAME"
@@ -188,7 +274,7 @@ if [ "$CURRENT_HOSTNAME" != "$FLAKE_NAME" ]; then
     fi
 fi
 
-# Step 7: Run the initial Darwin rebuild
+# Step 8: Run the initial Darwin rebuild
 print_status "Building and applying Nix Darwin configuration..."
 echo -e "${YELLOW}This may take a while on first run...${NC}"
 echo ""
@@ -206,7 +292,7 @@ else
     exit 1
 fi
 
-# Step 8: Make scripts executable
+# Step 9: Make scripts executable
 print_status "Setting up helper scripts..."
 chmod +x "$INSTALL_DIR/scripts/backup.sh" "$INSTALL_DIR/scripts/restore.sh" 2>/dev/null || true
 print_success "Scripts are ready to use"
