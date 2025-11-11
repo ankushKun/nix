@@ -130,14 +130,39 @@ if [ -d "$INSTALL_DIR/.git" ]; then
     fi
 else
     print_status "Cloning configuration repository..."
-    if [ -d "$INSTALL_DIR" ] && [ "$(ls -A $INSTALL_DIR)" ]; then
-        print_error "Directory $INSTALL_DIR exists and is not empty"
-        print_warning "Please backup or remove it first"
-        exit 1
+
+    # Check if directory exists and has files other than nix.conf
+    if [ -d "$INSTALL_DIR" ]; then
+        # Count files excluding nix.conf
+        FILE_COUNT=$(find "$INSTALL_DIR" -mindepth 1 -maxdepth 1 ! -name "nix.conf" | wc -l | tr -d ' ')
+
+        if [ "$FILE_COUNT" -gt 0 ]; then
+            print_error "Directory $INSTALL_DIR exists and contains files"
+            print_warning "Please backup or remove it first"
+            exit 1
+        fi
+
+        # If only nix.conf exists, back it up temporarily
+        if [ -f "$INSTALL_DIR/nix.conf" ]; then
+            print_status "Backing up existing nix.conf..."
+            mv "$INSTALL_DIR/nix.conf" "$INSTALL_DIR.nix.conf.backup"
+        fi
+
+        # Remove the directory to allow git clone
+        rmdir "$INSTALL_DIR" 2>/dev/null || true
     fi
 
     git clone "$REPO_URL" "$INSTALL_DIR"
     print_success "Repository cloned to $INSTALL_DIR"
+
+    # Restore nix.conf if it was backed up and doesn't exist in the repo
+    if [ -f "$INSTALL_DIR.nix.conf.backup" ] && [ ! -f "$INSTALL_DIR/nix.conf" ]; then
+        print_status "Restoring nix.conf..."
+        mv "$INSTALL_DIR.nix.conf.backup" "$INSTALL_DIR/nix.conf"
+    elif [ -f "$INSTALL_DIR.nix.conf.backup" ]; then
+        # Clean up backup if repo already has nix.conf
+        rm "$INSTALL_DIR.nix.conf.backup"
+    fi
 fi
 
 # Step 6: Check hostname
