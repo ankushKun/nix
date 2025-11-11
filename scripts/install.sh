@@ -327,14 +327,14 @@ echo ""
 
 cd "$INSTALL_DIR"
 
-if sudo nix run nix-darwin -- switch --flake "$INSTALL_DIR#$FLAKE_NAME"; then
+if sudo nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake "$INSTALL_DIR#$FLAKE_NAME"; then
     print_success "Nix Darwin configuration applied successfully!"
 else
     print_error "Configuration build failed"
     echo ""
     echo "You can try running manually with:"
     echo "  cd $INSTALL_DIR"
-    echo "  sudo nix run nix-darwin -- switch --flake .#$FLAKE_NAME"
+    echo "  sudo nix --extra-experimental-features \"nix-command flakes\" run nix-darwin -- switch --flake .#$FLAKE_NAME"
     exit 1
 fi
 
