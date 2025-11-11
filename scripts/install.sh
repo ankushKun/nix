@@ -319,7 +319,39 @@ if [ "$CURRENT_HOSTNAME" != "$FLAKE_NAME" ]; then
     fi
 fi
 
-# Step 8: Run the initial Darwin rebuild
+# Step 8: Backup existing system configuration files
+print_status "Checking for existing system configuration files..."
+
+NEED_BACKUP=false
+
+if [ -f "/etc/bashrc" ] && ! [ -f "/etc/bashrc.before-nix-darwin" ]; then
+    NEED_BACKUP=true
+fi
+
+if [ -f "/etc/zshrc" ] && ! [ -f "/etc/zshrc.before-nix-darwin" ]; then
+    NEED_BACKUP=true
+fi
+
+if [ "$NEED_BACKUP" = true ]; then
+    print_warning "Found existing shell configuration files in /etc"
+    echo -e "${YELLOW}Nix Darwin needs to manage these files. They will be backed up with .before-nix-darwin extension${NC}"
+
+    if [ -f "/etc/bashrc" ] && ! [ -f "/etc/bashrc.before-nix-darwin" ]; then
+        print_status "Backing up /etc/bashrc..."
+        sudo mv /etc/bashrc /etc/bashrc.before-nix-darwin
+        print_success "Backed up /etc/bashrc"
+    fi
+
+    if [ -f "/etc/zshrc" ] && ! [ -f "/etc/zshrc.before-nix-darwin" ]; then
+        print_status "Backing up /etc/zshrc..."
+        sudo mv /etc/zshrc /etc/zshrc.before-nix-darwin
+        print_success "Backed up /etc/zshrc"
+    fi
+else
+    print_success "No conflicting system files found"
+fi
+
+# Step 9: Run the initial Darwin rebuild
 print_status "Building and applying Nix Darwin configuration..."
 echo -e "${YELLOW}This may take a while on first run...${NC}"
 echo -e "${YELLOW}You will be prompted for your sudo password${NC}"
@@ -338,7 +370,7 @@ else
     exit 1
 fi
 
-# Step 9: Make scripts executable
+# Step 10: Make scripts executable
 print_status "Setting up helper scripts..."
 chmod +x "$INSTALL_DIR/scripts/backup.sh" "$INSTALL_DIR/scripts/restore.sh" 2>/dev/null || true
 print_success "Scripts are ready to use"
