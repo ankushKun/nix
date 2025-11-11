@@ -322,18 +322,19 @@ fi
 # Step 8: Run the initial Darwin rebuild
 print_status "Building and applying Nix Darwin configuration..."
 echo -e "${YELLOW}This may take a while on first run...${NC}"
+echo -e "${YELLOW}You will be prompted for your sudo password${NC}"
 echo ""
 
 cd "$INSTALL_DIR"
 
-if nix run nix-darwin -- switch --flake "$INSTALL_DIR#$FLAKE_NAME"; then
+if sudo nix run nix-darwin -- switch --flake "$INSTALL_DIR#$FLAKE_NAME"; then
     print_success "Nix Darwin configuration applied successfully!"
 else
     print_error "Configuration build failed"
     echo ""
     echo "You can try running manually with:"
     echo "  cd $INSTALL_DIR"
-    echo "  nix run nix-darwin -- switch --flake .#$FLAKE_NAME"
+    echo "  sudo nix run nix-darwin -- switch --flake .#$FLAKE_NAME"
     exit 1
 fi
 
