@@ -35,6 +35,22 @@ in
     options = "--delete-older-than 30d";
   };
 
+  # Homebrew configuration
+  homebrew = {
+    enable = true;
+    onActivation = {
+      autoUpdate = true;
+      upgrade = true;
+      cleanup = "zap";
+    };
+
+    # Mac App Store apps (requires mas)
+    masApps = {
+      # Add your Mac App Store apps here
+      # Example: AppName = 1234567890;
+    };
+  };
+
   # macOS system defaults
   system.defaults = {
     # Dock settings
@@ -49,6 +65,7 @@ in
         "/Users/weeblet/Applications/Brave Browser Apps.localized/Subspace.app"
         "${pkgs.discord}/Applications/Discord.app"
         "/Users/weeblet/Applications/WhatsApp Web.app"
+        "/Users/weeblet/Applications/YT Music.app"
       ];
     };
 

@@ -9,6 +9,7 @@
     pkgs.discord
     pkgs.brave
     pkgs.rectangle
+    pkgs.mas  # Mac App Store CLI
     pkgs.meslo-lgs-nf
   ];
 
