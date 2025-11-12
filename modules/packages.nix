@@ -49,6 +49,7 @@
 
     # Package managers & runtimes
     nodejs     # Node.js runtime (includes npm)
+    yarn       # Alternative npm client
     bun        # Fast JavaScript runtime & package manager
     pnpm       # Fast, disk space efficient package manager
   ];
