@@ -118,6 +118,12 @@ in
       "com.apple.mouse.tapBehavior" = 1;
       "com.apple.swipescrolldirection" = false;
       "com.apple.sound.beep.volume" = 0.7788008;
+      # Disable autocorrect and auto-substitutions
+      NSAutomaticSpellingCorrectionEnabled = false;
+      NSAutomaticCapitalizationEnabled = false;
+      NSAutomaticPeriodSubstitutionEnabled = false;
+      NSAutomaticQuoteSubstitutionEnabled = false;
+      NSAutomaticDashSubstitutionEnabled = false;
     };
 
     # Trackpad settings
