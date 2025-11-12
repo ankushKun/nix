@@ -58,20 +58,21 @@ in
       autohide = true;
       show-recents = false;
       minimize-to-application = true;
-      persistent-apps = [
-        "${pkgs.brave}/Applications/Brave Browser.app"
-        "${pkgs.vscode}/Applications/Visual Studio Code.app"
-        "${pkgs.kitty}/Applications/Kitty.app"
-        "/Users/weeblet/Applications/Brave Browser Apps.localized/Subspace.app"
-        "${pkgs.discord}/Applications/Discord.app"
-        "/Users/weeblet/Applications/WhatsApp Web.app"
-        "/Users/weeblet/Applications/YT Music.app"
-      ];
+      # persistent-apps = [
+      #   "${pkgs.brave}/Applications/Brave Browser.app"
+      #   "${pkgs.vscode}/Applications/Visual Studio Code.app"
+      #   "${pkgs.kitty}/Applications/Kitty.app"
+      #   "/Users/weeblet/Applications/Brave Browser Apps.localized/Subspace.app"
+      #   "${pkgs.discord}/Applications/Discord.app"
+      #   "/Users/weeblet/Applications/WhatsApp Web.app"
+      #   "/Users/weeblet/Applications/YT Music.app"
+      # ];
     };
 
     # Finder settings
     finder = {
-      FXPreferredViewStyle = "clmv";
+      FXPreferredViewStyle = "icnv";
+      QuitMenuItem = true;
       AppleShowAllExtensions = true;
       ShowPathbar = true;
       ShowStatusBar = true;
