@@ -7,8 +7,12 @@ in
   # Primary user for user-specific defaults
   system.primaryUser = "weeblet";
 
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  # Allow unfree and impure packages
+  nixpkgs.config = {
+    allowUnfree = true;
+    allowInsecure = true;
+    allowUnsupportedSystem = true;
+  };
 
   # System packages
   environment.systemPackages = packages.systemPackages;

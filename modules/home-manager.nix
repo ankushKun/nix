@@ -63,10 +63,6 @@ in
 
     # Shell aliases - modern alternatives
     shellAliases = {
-      # Editor aliases
-      # vim, vi, and nvim now use regular Neovim
-      # Use 'lvim' or 'lv' to open LunarVim
-      lv = "lvim";
 
       # Better ls (eza)
       ls = "eza --icons --group-directories-first";
@@ -127,8 +123,8 @@ in
   # Link Powerlevel10k config
   home.file.".p10k.zsh".source = ../configs/p10k.zsh;
 
-  # LunarVim configuration
-  home.file.".config/lvim/config.lua".source = ../configs/lvim-config.lua;
+  # Neovim configuration
+  home.file.".config/nvim/init.lua".source = ../configs/nvim-init.lua;
 
   # Rectangle configuration
   home.file."Library/Application Support/Rectangle/RectangleConfig.json".source = ../configs/rectangle.json;

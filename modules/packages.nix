@@ -22,8 +22,7 @@
     rustup
 
     # Editors
-    lunarvim # Pre-configured Neovim IDE
-    neovim   # Simple/vanilla Neovim
+    neovim
 
     # Language servers
     nodePackages.typescript-language-server
