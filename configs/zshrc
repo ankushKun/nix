@@ -74,3 +74,5 @@ export PATH="/usr/local/sbin:$PATH"
 export PATH="/usr/local/bin:$PATH"
 
 export HOMEBREW_NO_AUTO_UPDATE=1
+export NIXPKGS_ALLOW_UNFREE=1
+

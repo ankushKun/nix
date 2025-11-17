@@ -21,6 +21,13 @@
       # $ darwin-rebuild switch --flake .#weeblets-mbp
       darwinConfigurations."weeblets-mbp" = nix-darwin.lib.darwinSystem {
         modules = [
+          # Configure nixpkgs with unfree packages allowed
+          {
+            nixpkgs.config.allowUnfree = true;
+            nixpkgs.config.allowInsecure = true;
+            nixpkgs.config.allowUnsupportedSystem = true;
+          }
+
           # Import darwin-specific configuration
           ./modules/darwin.nix
 
