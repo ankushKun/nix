@@ -5,11 +5,11 @@
   systemPackages = [
     pkgs.claude-code
     pkgs.kitty
-    pkgs.vscode
+    # pkgs.vscode
     pkgs.discord
     # pkgs.brave
     pkgs.rectangle
-    pkgs.mas  # Mac App Store CLI
+    # pkgs.mas  # Mac App Store CLI
     pkgs.meslo-lgs-nf
   ];
 
@@ -51,5 +51,7 @@
     yarn       # Alternative npm client
     bun        # Fast JavaScript runtime & package manager
     pnpm       # Fast, disk space efficient package manager
+
+    go
   ];
 }
