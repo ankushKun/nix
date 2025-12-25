@@ -53,5 +53,10 @@
     pnpm       # Fast, disk space efficient package manager
 
     go
+    docker
+    docker-compose
+    colima
+
+    hugo
   ];
 }

@@ -94,6 +94,7 @@ in
 
       # Nix Darwin aliases
       dr = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
+      nix-config = "nvim /Users/$(whoami)/.config/nix/flake.nix";
     };
   };
 
