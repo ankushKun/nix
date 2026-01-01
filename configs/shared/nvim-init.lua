@@ -859,11 +859,18 @@ require("lazy").setup({
       -- Default LSP capabilities with nvim-cmp support
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-      -- Helper function to setup LSP servers
+      -- Helper function to setup LSP servers (compatible with both old and new API)
       local function setup_lsp(server, config)
         config = config or {}
         config.capabilities = capabilities
-        require("lspconfig")[server].setup(config)
+
+        -- Use new vim.lsp.config API if available (Neovim 0.11+)
+        if vim.lsp.config then
+          vim.lsp.config(server, config)
+        else
+          -- Fallback to old lspconfig API
+          require("lspconfig")[server].setup(config)
+        end
       end
 
       -- Configure all LSP servers installed via Nix
