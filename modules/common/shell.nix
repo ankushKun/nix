@@ -86,6 +86,11 @@ in
     };
   };
 
+  # Environment variables
+  home.sessionVariables = {
+    EDITOR = "${pkgs.neovim}/bin/nvim";
+  };
+
   # Direnv integration
   programs.direnv = {
     enable = true;
