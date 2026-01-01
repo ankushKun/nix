@@ -45,7 +45,23 @@
         ];
       };
 
-      # Formatter for 'nix fmt'
+      # Standalone Home Manager for Linux VPS
+      # Usage: home-manager switch --flake .#username@hostname
+      homeConfigurations = {
+        # Example: "user@vps" - update to match your VPS username and hostname
+        # After cloning on VPS, run:
+        # nix run home-manager/master -- switch --flake ~/.config/nix#username@hostname
+        "username@hostname" = home-manager.lib.homeManagerConfiguration {
+          pkgs = import nixpkgs {
+            system = "x86_64-linux";
+            config.allowUnfree = true;
+          };
+          modules = [ ./hosts/vps/default.nix ];
+        };
+      };
+
+      # Formatters for 'nix fmt'
       formatter.aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixpkgs-fmt;
+      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
     };
 }
