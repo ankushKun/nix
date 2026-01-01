@@ -9,19 +9,30 @@ echo "Nix + Home Manager VPS Installer"
 echo "================================"
 echo ""
 
+NIX_JUST_INSTALLED=false
+
 # Check if Nix is already installed
 if command -v nix &> /dev/null; then
     echo "✓ Nix is already installed"
 else
     echo "Installing Nix..."
     sh <(curl -L https://nixos.org/nix/install) --daemon
-
-    # Source nix
-    if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
-        . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
-    fi
-
+    NIX_JUST_INSTALLED=true
     echo "✓ Nix installed successfully"
+fi
+
+# Always source nix profile to ensure it's available in current session
+if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+    . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+
+# If Nix was just installed, we need to restart the script in a new shell
+if [ "$NIX_JUST_INSTALLED" = true ] && [ -z "$NIX_INSTALLER_RERUN" ]; then
+    echo ""
+    echo "Nix was just installed. Restarting script in a new environment..."
+    echo ""
+    export NIX_INSTALLER_RERUN=1
+    exec bash "$0" "$@"
 fi
 
 # Enable flakes
