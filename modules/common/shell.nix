@@ -42,7 +42,7 @@ in
     };
 
     # Load custom zshrc (platform-specific)
-    initExtra =
+    initContent =
       builtins.readFile ../../configs/shared/zshrc +
       (if isDarwin then builtins.readFile ../../configs/darwin/zshrc-darwin else "");
 

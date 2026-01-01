@@ -4,9 +4,11 @@
   # Git configuration
   programs.git = {
     enable = true;
-    userName = "ankushKun";
-    userEmail = "ankush4singh@gmail.com";
-    extraConfig = {
+    settings = {
+      user = {
+        name = "ankushKun";
+        email = "ankush4singh@gmail.com";
+      };
       init.defaultBranch = "main";
       pull.rebase = false;
     };
