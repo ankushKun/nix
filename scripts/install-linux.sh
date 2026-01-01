@@ -66,39 +66,27 @@ else
     cd ~/.config/nix
 fi
 
-# Get username and hostname
+# Detect username for confirmation
 USERNAME=$(whoami)
-HOSTNAME=$(hostname)
 
 echo ""
-echo "Detected configuration:"
-echo "  Username: $USERNAME"
-echo "  Hostname: $HOSTNAME"
+echo "Detected username: $USERNAME"
 echo ""
 read -p "Is this correct? (y/n) " -n 1 -r
 echo ""
 
 if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    read -p "Enter username: " USERNAME
-    read -p "Enter hostname: " HOSTNAME
+    echo "Please ensure the \$USER environment variable is set correctly."
+    exit 1
 fi
 
 echo ""
 echo "Installing home-manager configuration..."
-echo "Configuration: $USERNAME@$HOSTNAME"
-
-# Update flake.nix with the actual username@hostname (only if not already updated)
-if grep -q "\"username@hostname\"" ~/.config/nix/flake.nix 2>/dev/null; then
-    echo "Updating flake.nix with your username@hostname..."
-    sed -i "s/\"username@hostname\"/\"$USERNAME@$HOSTNAME\"/g" ~/.config/nix/flake.nix
-else
-    echo "Flake already configured for: $(grep -oP '"\K[^"]+@[^"]+' ~/.config/nix/flake.nix | head -1)"
-fi
 
 # Install home-manager (with explicit experimental features in case daemon restart didn't work)
 echo ""
 echo "Installing home-manager and all packages (this may take a few minutes)..."
-nix --extra-experimental-features "nix-command flakes" run home-manager/master -- switch --flake ~/.config/nix#$USERNAME@$HOSTNAME
+nix --extra-experimental-features "nix-command flakes" run home-manager/master -- switch --flake ~/.config/nix#linux
 
 # Source home-manager session variables to get zsh in PATH
 if [ -f ~/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then

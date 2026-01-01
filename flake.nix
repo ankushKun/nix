@@ -46,12 +46,9 @@
       };
 
       # Standalone Home Manager for Linux systems
-      # Usage: home-manager switch --flake .#username@hostname
+      # Usage: home-manager switch --flake .#linux
       homeConfigurations = {
-        # Example: "user@hostname" - update to match your Linux username and hostname
-        # After cloning on your Linux system, run:
-        # nix run home-manager/master -- switch --flake ~/.config/nix#username@hostname
-        "username@hostname" = home-manager.lib.homeManagerConfiguration {
+        "linux" = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             system = "x86_64-linux";
             config.allowUnfree = true;

@@ -45,7 +45,7 @@ This script will:
 - Install Nix (multi-user installation)
 - Enable flakes
 - Clone this repository
-- Detect your username and hostname
+- Auto-detect your username from `$USER`
 - Apply the home-manager configuration
 - Set up all shared dotfiles (neovim, zsh, tmux, etc.)
 - Set zsh as your default shell
@@ -71,23 +71,17 @@ If you prefer manual installation:
    cd ~/.config/nix
    ```
 
-4. **Update flake.nix**:
+4. **Apply configuration**:
    ```bash
-   # Replace "username@hostname" with your actual username and hostname
-   sed -i "s/\"username@hostname\"/\"$(whoami)@$(hostname)\"/g" flake.nix
+   nix run home-manager/master -- switch --flake ~/.config/nix#linux
    ```
 
-   Note: Your username is automatically detected from the `$USER` environment variable, so you don't need to manually edit any configuration files.
-
-5. **Apply configuration**:
-   ```bash
-   nix run home-manager/master -- switch --flake ~/.config/nix#$(whoami)@$(hostname)
-   ```
+   Note: Your username is automatically detected from the `$USER` environment variable at runtime.
 
 ### Updating Linux Configuration
 
 ```bash
-hm  # Alias for: home-manager switch --flake ~/.config/nix#user@hostname
+hm  # Alias for: home-manager switch --flake ~/.config/nix#linux
 ```
 
 ## What's Shared Between Platforms
