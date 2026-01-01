@@ -71,19 +71,15 @@ If you prefer manual installation:
    cd ~/.config/nix
    ```
 
-4. **Update configuration**:
-   Edit `hosts/linux/default.nix` and replace `YOUR_LINUX_USERNAME` with your actual username:
-   ```bash
-   sed -i "s/YOUR_LINUX_USERNAME/$(whoami)/g" hosts/linux/default.nix
-   ```
-
-5. **Update flake.nix**:
+4. **Update flake.nix**:
    ```bash
    # Replace "username@hostname" with your actual username and hostname
    sed -i "s/\"username@hostname\"/\"$(whoami)@$(hostname)\"/g" flake.nix
    ```
 
-6. **Apply configuration**:
+   Note: Your username is automatically detected from the `$USER` environment variable, so you don't need to manually edit any configuration files.
+
+5. **Apply configuration**:
    ```bash
    nix run home-manager/master -- switch --flake ~/.config/nix#$(whoami)@$(hostname)
    ```

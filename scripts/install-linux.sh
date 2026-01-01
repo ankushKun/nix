@@ -83,16 +83,17 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     read -p "Enter hostname: " HOSTNAME
 fi
 
-# Update hosts/linux/default.nix with username
-echo "Updating Linux configuration..."
-sed -i "s/YOUR_LINUX_USERNAME/$USERNAME/g" ~/.config/nix/hosts/linux/default.nix
-
 echo ""
 echo "Installing home-manager configuration..."
 echo "Configuration: $USERNAME@$HOSTNAME"
 
-# Update flake.nix with the actual username@hostname
-sed -i "s/\"username@hostname\"/\"$USERNAME@$HOSTNAME\"/g" ~/.config/nix/flake.nix
+# Update flake.nix with the actual username@hostname (only if not already updated)
+if grep -q "\"username@hostname\"" ~/.config/nix/flake.nix 2>/dev/null; then
+    echo "Updating flake.nix with your username@hostname..."
+    sed -i "s/\"username@hostname\"/\"$USERNAME@$HOSTNAME\"/g" ~/.config/nix/flake.nix
+else
+    echo "Flake already configured for: $(grep -oP '"\K[^"]+@[^"]+' ~/.config/nix/flake.nix | head -1)"
+fi
 
 # Install home-manager (with explicit experimental features in case daemon restart didn't work)
 echo ""

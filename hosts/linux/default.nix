@@ -1,14 +1,18 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
+let
+  # Automatically detect username from environment
+  username = builtins.getEnv "USER";
+in
 {
   # Import common cross-platform configuration
   imports = [
     ../../modules/common/home.nix
   ];
 
-  # User information (update these for your Linux system)
-  home.username = "YOUR_LINUX_USERNAME";  # Change this to your username
-  home.homeDirectory = "/home/YOUR_LINUX_USERNAME";  # Change this to match your username
+  # User information (automatically detected from $USER environment variable)
+  home.username = username;
+  home.homeDirectory = "/home/${username}";
 
   # Linux-specific packages (if any)
   home.packages = with pkgs; [
