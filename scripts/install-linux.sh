@@ -95,17 +95,40 @@ echo "Configuration: $USERNAME@$HOSTNAME"
 sed -i "s/\"username@hostname\"/\"$USERNAME@$HOSTNAME\"/g" ~/.config/nix/flake.nix
 
 # Install home-manager (with explicit experimental features in case daemon restart didn't work)
+echo ""
+echo "Installing home-manager and all packages (this may take a few minutes)..."
 nix --extra-experimental-features "nix-command flakes" run home-manager/master -- switch --flake ~/.config/nix#$USERNAME@$HOSTNAME
 
-# Change default shell to zsh
+# Source home-manager session variables to get zsh in PATH
+if [ -f ~/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then
+    . ~/.nix-profile/etc/profile.d/hm-session-vars.sh
+fi
+
+# Change default shell to zsh (now that home-manager has installed it)
 echo ""
 echo "Setting zsh as default shell..."
-ZSH_PATH=$(which zsh)
-if [ -n "$ZSH_PATH" ]; then
+
+# Find zsh in home-manager profile
+ZSH_PATH="$HOME/.nix-profile/bin/zsh"
+
+# Fallback to system zsh if home-manager one doesn't exist
+if [ ! -f "$ZSH_PATH" ]; then
+    ZSH_PATH=$(which zsh 2>/dev/null)
+fi
+
+if [ -f "$ZSH_PATH" ]; then
+    # Add zsh to /etc/shells if not already there
+    if ! grep -q "^$ZSH_PATH$" /etc/shells 2>/dev/null; then
+        echo "Adding $ZSH_PATH to /etc/shells..."
+        echo "$ZSH_PATH" | sudo tee -a /etc/shells > /dev/null
+    fi
+
+    # Change default shell
     sudo chsh -s "$ZSH_PATH" "$USERNAME"
-    echo "✓ Default shell changed to zsh"
+    echo "✓ Default shell changed to zsh ($ZSH_PATH)"
 else
     echo "⚠ Warning: Could not find zsh, skipping shell change"
+    echo "  You can manually install zsh and run: chsh -s \$(which zsh)"
 fi
 
 echo ""
