@@ -86,7 +86,7 @@ echo "Installing home-manager configuration..."
 # Install home-manager (with explicit experimental features in case daemon restart didn't work)
 echo ""
 echo "Installing home-manager and all packages (this may take a few minutes)..."
-nix --extra-experimental-features "nix-command flakes" run home-manager/master -- switch --flake ~/.config/nix#linux
+nix --extra-experimental-features "nix-command flakes" run home-manager/master -- switch --flake ~/.config/nix#linux --impure
 
 # Source home-manager session variables to get zsh in PATH
 if [ -f ~/.nix-profile/etc/profile.d/hm-session-vars.sh ]; then

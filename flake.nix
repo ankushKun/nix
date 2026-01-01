@@ -46,14 +46,23 @@
       };
 
       # Standalone Home Manager for Linux systems
-      # Usage: home-manager switch --flake .#linux
+      # Usage: home-manager switch --flake .#linux --impure
       homeConfigurations = {
         "linux" = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             system = "x86_64-linux";
             config.allowUnfree = true;
           };
-          modules = [ ./hosts/linux/default.nix ];
+          modules = [
+            ./hosts/linux/default.nix
+            # Add assertion for username
+            {
+              assertions = [{
+                assertion = builtins.getEnv "USER" != "";
+                message = "Username could not be determined. Please run with --impure flag.";
+              }];
+            }
+          ];
         };
       };
 

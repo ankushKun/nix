@@ -73,15 +73,15 @@ If you prefer manual installation:
 
 4. **Apply configuration**:
    ```bash
-   nix run home-manager/master -- switch --flake ~/.config/nix#linux
+   nix run home-manager/master -- switch --flake ~/.config/nix#linux --impure
    ```
 
-   Note: Your username is automatically detected from the `$USER` environment variable at runtime.
+   Note: The `--impure` flag allows Nix to access the `$USER` environment variable to auto-detect your username.
 
 ### Updating Linux Configuration
 
 ```bash
-hm  # Alias for: home-manager switch --flake ~/.config/nix#linux
+hm  # Alias for: home-manager switch --flake ~/.config/nix#linux --impure
 ```
 
 ## What's Shared Between Platforms

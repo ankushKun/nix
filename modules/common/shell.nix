@@ -82,7 +82,7 @@ in
       icloud = "cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs";
     } // lib.optionalAttrs isLinux {
       # Linux-specific aliases
-      hm = "home-manager switch --flake ~/.config/nix#linux";
+      hm = "home-manager switch --flake ~/.config/nix#linux --impure";
     };
   };
 
