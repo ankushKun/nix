@@ -97,13 +97,24 @@ sed -i "s/\"username@hostname\"/\"$USERNAME@$HOSTNAME\"/g" ~/.config/nix/flake.n
 # Install home-manager (with explicit experimental features in case daemon restart didn't work)
 nix --extra-experimental-features "nix-command flakes" run home-manager/master -- switch --flake ~/.config/nix#$USERNAME@$HOSTNAME
 
+# Change default shell to zsh
+echo ""
+echo "Setting zsh as default shell..."
+ZSH_PATH=$(which zsh)
+if [ -n "$ZSH_PATH" ]; then
+    sudo chsh -s "$ZSH_PATH" "$USERNAME"
+    echo "✓ Default shell changed to zsh"
+else
+    echo "⚠ Warning: Could not find zsh, skipping shell change"
+fi
+
 echo ""
 echo "================================"
 echo "✓ Installation complete!"
 echo "================================"
 echo ""
 echo "Next steps:"
-echo "  1. Restart your shell or run: source ~/.zshrc"
+echo "  1. Log out and log back in (or run: exec zsh)"
 echo "  2. To update your configuration: hm"
 echo "  3. To edit your config: cd ~/.config/nix"
 echo ""
