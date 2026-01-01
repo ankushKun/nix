@@ -14,8 +14,9 @@ in
   home.username = username;
   home.homeDirectory = "/home/${username}";
 
-  # Linux-specific packages (if any)
+  # Linux-specific packages
   home.packages = with pkgs; [
-    # Add any Linux-specific tools here
+    # home-manager command for standalone installations
+    home-manager
   ];
 }
