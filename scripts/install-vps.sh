@@ -28,6 +28,16 @@ fi
 echo "Enabling Nix flakes..."
 mkdir -p ~/.config/nix
 echo "experimental-features = nix-command flakes" > ~/.config/nix/nix.conf
+
+# Restart nix-daemon to pick up the new config
+echo "Restarting Nix daemon..."
+if command -v systemctl &> /dev/null; then
+    sudo systemctl restart nix-daemon
+elif [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
+    # Source nix profile if systemctl not available
+    . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+fi
+
 echo "✓ Flakes enabled"
 
 # Clone or update config repository
@@ -73,8 +83,8 @@ echo "Configuration: $USERNAME@$HOSTNAME"
 # Update flake.nix with the actual username@hostname
 sed -i "s/\"username@hostname\"/\"$USERNAME@$HOSTNAME\"/g" ~/.config/nix/flake.nix
 
-# Install home-manager
-nix run home-manager/master -- switch --flake ~/.config/nix#$USERNAME@$HOSTNAME
+# Install home-manager (with explicit experimental features in case daemon restart didn't work)
+nix --extra-experimental-features "nix-command flakes" run home-manager/master -- switch --flake ~/.config/nix#$USERNAME@$HOSTNAME
 
 echo ""
 echo "================================"
