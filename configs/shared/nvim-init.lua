@@ -491,45 +491,33 @@ require("lazy").setup({
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter.configs").setup({
-        ensure_installed = {}, -- Don't auto-install parsers
-        highlight = {
-          enable = true,
-          additional_vim_regex_highlighting = false,
-        },
-        indent = {
-          enable = true,
-        },
-        -- Better text objects
-        textobjects = {
-          select = {
+      -- Check if nvim-treesitter.configs exists (for compatibility)
+      local has_configs, ts_configs = pcall(require, "nvim-treesitter.configs")
+      if has_configs then
+        ts_configs.setup({
+          ensure_installed = {}, -- Don't auto-install parsers
+          highlight = {
             enable = true,
-            lookahead = true,
-            keymaps = {
-              ["af"] = "@function.outer",
-              ["if"] = "@function.inner",
-              ["ac"] = "@class.outer",
-              ["ic"] = "@class.inner",
-            },
+            additional_vim_regex_highlighting = false,
           },
-        },
-      })
+          indent = {
+            enable = true,
+          },
+        })
+      end
     end,
-  },
-
-  -- Better text objects (must load after treesitter)
-  {
-    "nvim-treesitter/nvim-treesitter-textobjects",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    event = "VeryLazy",
   },
 
   -- Auto close HTML/JSX tags
   {
     "windwp/nvim-ts-autotag",
     dependencies = "nvim-treesitter/nvim-treesitter",
+    event = "InsertEnter",
     config = function()
-      require("nvim-ts-autotag").setup()
+      local has_autotag, autotag = pcall(require, "nvim-ts-autotag")
+      if has_autotag then
+        autotag.setup()
+      end
     end,
   },
 
