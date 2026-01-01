@@ -1,5 +1,5 @@
 -- ============================================================================
--- Neovim Configuration - Clean & Simple with QoL features
+-- Neovim Configuration - Enhanced with Better LSP & QoL Features
 -- ============================================================================
 
 -- ============================================================================
@@ -34,6 +34,9 @@ vim.opt.swapfile = false           -- Disable swap files
 vim.opt.splitright = true          -- Vertical splits go right
 vim.opt.splitbelow = true          -- Horizontal splits go below
 vim.opt.showmode = false           -- Don't show mode (we have statusline)
+vim.opt.conceallevel = 0           -- Don't hide characters (like in markdown)
+vim.opt.pumheight = 10             -- Popup menu height
+vim.opt.completeopt = 'menu,menuone,noselect' -- Better completion experience
 
 -- Set leader key to space
 vim.g.mapleader = ' '
@@ -76,6 +79,7 @@ vim.keymap.set('n', '<C-Right>', ':vertical resize +2<CR>', { desc = 'Increase w
 vim.keymap.set('n', '{', ':bprevious<CR>', { desc = 'Previous buffer' })
 vim.keymap.set('n', '}', ':bnext<CR>', { desc = 'Next buffer' })
 vim.keymap.set('n', '<leader>bd', ':bdelete<CR>', { desc = 'Delete buffer' })
+vim.keymap.set('n', '<leader>ba', ':%bd|e#<CR>', { desc = 'Delete all buffers except current' })
 
 -- Better indenting
 vim.keymap.set('v', '<', '<gv', { desc = 'Indent left' })
@@ -93,10 +97,17 @@ vim.keymap.set('n', '<Esc>', ':nohlsearch<CR>', { desc = 'Clear search highlight
 -- Quick save
 vim.keymap.set('n', '<leader>w', ':w<CR>', { desc = 'Save file' })
 vim.keymap.set('n', '<leader>q', ':q<CR>', { desc = 'Quit' })
+vim.keymap.set('n', '<leader>Q', ':qa!<CR>', { desc = 'Quit all without saving' })
 
 -- Split windows
 vim.keymap.set('n', '<leader>sv', ':vsplit<CR>', { desc = 'Split vertically' })
 vim.keymap.set('n', '<leader>sh', ':split<CR>', { desc = 'Split horizontally' })
+
+-- Better paste (don't yank replaced text)
+vim.keymap.set('v', 'p', '"_dP', { desc = 'Paste without yanking' })
+
+-- Select all
+vim.keymap.set('n', '<C-a>', 'gg<S-v>G', { desc = 'Select all' })
 
 -- ============================================================================
 -- Auto Commands
@@ -130,6 +141,15 @@ vim.api.nvim_create_autocmd('BufReadPost', {
     if mark[1] > 0 and mark[1] <= lcount then
       pcall(vim.api.nvim_win_set_cursor, 0, mark)
     end
+  end,
+})
+
+-- Format on save (for supported LSPs)
+vim.api.nvim_create_autocmd('BufWritePre', {
+  group = vim.api.nvim_create_augroup('format_on_save', { clear = true }),
+  pattern = '*',
+  callback = function()
+    vim.lsp.buf.format({ timeout_ms = 2000 })
   end,
 })
 
@@ -202,6 +222,7 @@ require("lazy").setup({
     dependencies = {
       "nvim-lua/plenary.nvim",
       "nvim-tree/nvim-web-devicons",
+      { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
     },
     config = function()
       require("telescope").setup({
@@ -214,8 +235,20 @@ require("lazy").setup({
               preview_width = 0.55,
             },
           },
+          file_ignore_patterns = { "node_modules", ".git/", "dist/", "build/" },
+        },
+        extensions = {
+          fzf = {
+            fuzzy = true,
+            override_generic_sorter = true,
+            override_file_sorter = true,
+            case_mode = "smart_case",
+          },
         },
       })
+
+      -- Load fzf extension
+      pcall(require("telescope").load_extension, "fzf")
 
       -- Keybindings
       local builtin = require("telescope.builtin")
@@ -225,6 +258,8 @@ require("lazy").setup({
       vim.keymap.set("n", "<leader>fh", builtin.help_tags, { desc = "Find help" })
       vim.keymap.set("n", "<leader>fo", builtin.oldfiles, { desc = "Recent files" })
       vim.keymap.set("n", "<leader>fc", builtin.commands, { desc = "Find commands" })
+      vim.keymap.set("n", "<leader>fs", builtin.lsp_document_symbols, { desc = "Document symbols" })
+      vim.keymap.set("n", "<leader>fw", builtin.grep_string, { desc = "Find word under cursor" })
     end,
   },
 
@@ -455,6 +490,9 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter-textobjects", -- Better text objects
+    },
     config = function()
       require("nvim-treesitter.configs").setup({
         ensure_installed = {}, -- Don't auto-install parsers
@@ -465,7 +503,112 @@ require("lazy").setup({
         indent = {
           enable = true,
         },
+        -- Better text objects
+        textobjects = {
+          select = {
+            enable = true,
+            lookahead = true,
+            keymaps = {
+              ["af"] = "@function.outer",
+              ["if"] = "@function.inner",
+              ["ac"] = "@class.outer",
+              ["ic"] = "@class.inner",
+            },
+          },
+        },
       })
+    end,
+  },
+
+  -- Auto close HTML/JSX tags
+  {
+    "windwp/nvim-ts-autotag",
+    dependencies = "nvim-treesitter/nvim-treesitter",
+    config = function()
+      require("nvim-ts-autotag").setup()
+    end,
+  },
+
+  -- Comment toggling
+  {
+    "numToStr/Comment.nvim",
+    config = function()
+      require("Comment").setup({
+        toggler = {
+          line = "gcc",  -- Line-comment toggle
+          block = "gbc", -- Block-comment toggle
+        },
+        opleader = {
+          line = "gc",   -- Line-comment operator
+          block = "gb",  -- Block-comment operator
+        },
+        mappings = {
+          basic = true,
+          extra = true,
+        },
+      })
+    end,
+  },
+
+  -- Surround text objects (cs"' to change " to ', ds" to delete ", ysiw" to surround word)
+  {
+    "kylechui/nvim-surround",
+    event = "VeryLazy",
+    config = function()
+      require("nvim-surround").setup({})
+    end,
+  },
+
+  -- TODO/FIXME/NOTE highlighting
+  {
+    "folke/todo-comments.nvim",
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require("todo-comments").setup({
+        signs = true,
+        keywords = {
+          FIX = { icon = " ", color = "error", alt = { "FIXME", "BUG", "FIXIT", "ISSUE" } },
+          TODO = { icon = " ", color = "info" },
+          HACK = { icon = " ", color = "warning" },
+          WARN = { icon = " ", color = "warning", alt = { "WARNING", "XXX" } },
+          PERF = { icon = " ", color = "default", alt = { "OPTIM", "PERFORMANCE", "OPTIMIZE" } },
+          NOTE = { icon = " ", color = "hint", alt = { "INFO" } },
+        },
+      })
+
+      -- Keybindings
+      vim.keymap.set("n", "]t", function()
+        require("todo-comments").jump_next()
+      end, { desc = "Next todo comment" })
+      vim.keymap.set("n", "[t", function()
+        require("todo-comments").jump_prev()
+      end, { desc = "Previous todo comment" })
+      vim.keymap.set("n", "<leader>ft", ":TodoTelescope<CR>", { desc = "Find todos" })
+    end,
+  },
+
+  -- Better diagnostics UI
+  {
+    "folke/trouble.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    config = function()
+      require("trouble").setup({})
+
+      vim.keymap.set("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", { desc = "Diagnostics (Trouble)" })
+      vim.keymap.set("n", "<leader>xd", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", { desc = "Buffer Diagnostics (Trouble)" })
+      vim.keymap.set("n", "<leader>xl", "<cmd>Trouble loclist toggle<cr>", { desc = "Location List (Trouble)" })
+      vim.keymap.set("n", "<leader>xq", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" })
+    end,
+  },
+
+  -- Snippets
+  {
+    "L3MON4D3/LuaSnip",
+    dependencies = {
+      "rafamadriz/friendly-snippets", -- Collection of common snippets
+    },
+    config = function()
+      require("luasnip.loaders.from_vscode").lazy_load()
     end,
   },
 
@@ -476,6 +619,7 @@ require("lazy").setup({
       "hrsh7th/cmp-nvim-lsp",     -- LSP completion source
       "hrsh7th/cmp-buffer",        -- Buffer completion source
       "hrsh7th/cmp-path",          -- Path completion source
+      "hrsh7th/cmp-cmdline",       -- Command line completion
       "L3MON4D3/LuaSnip",          -- Snippet engine
       "saadparwaiz1/cmp_luasnip",  -- Snippet completion source
     },
@@ -517,15 +661,72 @@ require("lazy").setup({
           end, { "i", "s" }),
         }),
         sources = cmp.config.sources({
-          { name = "nvim_lsp" },
-          { name = "luasnip" },
-          { name = "buffer" },
-          { name = "path" },
+          { name = "nvim_lsp", priority = 1000 },
+          { name = "luasnip", priority = 750 },
+          { name = "buffer", priority = 500 },
+          { name = "path", priority = 250 },
         }),
         window = {
           completion = cmp.config.window.bordered(),
           documentation = cmp.config.window.bordered(),
         },
+        formatting = {
+          format = function(entry, vim_item)
+            -- Kind icons
+            local kind_icons = {
+              Text = "",
+              Method = "󰆧",
+              Function = "󰊕",
+              Constructor = "",
+              Field = "󰇽",
+              Variable = "󰂡",
+              Class = "󰠱",
+              Interface = "",
+              Module = "",
+              Property = "󰜢",
+              Unit = "",
+              Value = "󰎠",
+              Enum = "",
+              Keyword = "󰌋",
+              Snippet = "",
+              Color = "󰏘",
+              File = "󰈙",
+              Reference = "",
+              Folder = "󰉋",
+              EnumMember = "",
+              Constant = "󰏿",
+              Struct = "",
+              Event = "",
+              Operator = "󰆕",
+              TypeParameter = "󰅲",
+            }
+            vim_item.kind = string.format('%s %s', kind_icons[vim_item.kind], vim_item.kind)
+            vim_item.menu = ({
+              nvim_lsp = "[LSP]",
+              luasnip = "[Snippet]",
+              buffer = "[Buffer]",
+              path = "[Path]",
+            })[entry.source.name]
+            return vim_item
+          end,
+        },
+      })
+
+      -- Command line completion
+      cmp.setup.cmdline('/', {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = {
+          { name = 'buffer' }
+        }
+      })
+
+      cmp.setup.cmdline(':', {
+        mapping = cmp.mapping.preset.cmdline(),
+        sources = cmp.config.sources({
+          { name = 'path' }
+        }, {
+          { name = 'cmdline' }
+        })
       })
 
       -- Integrate autopairs with cmp
@@ -604,7 +805,6 @@ require("lazy").setup({
         hi_parameter = "LspSignatureActiveParameter",
         max_height = 12,
         max_width = 80,
-        transparency = 100, -- Fully transparent (0-100 scale)
         toggle_key = "<C-s>",
         select_signature_key = "<M-n>",
       })
@@ -616,6 +816,31 @@ require("lazy").setup({
     "neovim/nvim-lspconfig",
     dependencies = { "williamboman/mason-lspconfig.nvim" },
     config = function()
+      -- Configure diagnostics display
+      vim.diagnostic.config({
+        virtual_text = {
+          prefix = '●',
+          source = "if_many",
+        },
+        signs = true,
+        underline = true,
+        update_in_insert = false,
+        severity_sort = true,
+        float = {
+          border = "rounded",
+          source = "always",
+          header = "",
+          prefix = "",
+        },
+      })
+
+      -- Diagnostic signs
+      local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
+      for type, icon in pairs(signs) do
+        local hl = "DiagnosticSign" .. type
+        vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
+      end
+
       -- Setup LSP keybindings when LSP attaches
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("lsp_attach", { clear = true }),
@@ -625,13 +850,17 @@ require("lazy").setup({
           end
 
           map("gd", vim.lsp.buf.definition, "Go to definition")
+          map("gD", vim.lsp.buf.declaration, "Go to declaration")
           map("gr", vim.lsp.buf.references, "Go to references")
           map("gI", vim.lsp.buf.implementation, "Go to implementation")
+          map("gy", vim.lsp.buf.type_definition, "Go to type definition")
           map("K", vim.lsp.buf.hover, "Hover documentation")
           map("<leader>rn", vim.lsp.buf.rename, "Rename")
           map("<leader>ca", vim.lsp.buf.code_action, "Code action")
+          map("<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format")
           map("[d", vim.diagnostic.goto_prev, "Previous diagnostic")
           map("]d", vim.diagnostic.goto_next, "Next diagnostic")
+          map("<leader>d", vim.diagnostic.open_float, "Show diagnostic")
         end,
       })
 
@@ -641,10 +870,65 @@ require("lazy").setup({
       -- Setup function for LSP servers
       local lspconfig = require("lspconfig")
 
-      -- Example: Uncomment and configure LSP servers as needed
-      -- lspconfig.lua_ls.setup({ capabilities = capabilities })
-      -- lspconfig.nil_ls.setup({ capabilities = capabilities })
-      -- lspconfig.tsserver.setup({ capabilities = capabilities })
+      -- Configure all LSP servers installed via Nix
+      -- Lua
+      lspconfig.lua_ls.setup({
+        capabilities = capabilities,
+        settings = {
+          Lua = {
+            diagnostics = {
+              globals = { 'vim' },
+            },
+            workspace = {
+              library = vim.api.nvim_get_runtime_file("", true),
+              checkThirdParty = false,
+            },
+            telemetry = {
+              enable = false,
+            },
+          },
+        },
+      })
+
+      -- Nix
+      lspconfig.nil_ls.setup({
+        capabilities = capabilities,
+        settings = {
+          ['nil'] = {
+            formatting = {
+              command = { "nixpkgs-fmt" },
+            },
+          },
+        },
+      })
+
+      -- TypeScript/JavaScript
+      lspconfig.ts_ls.setup({
+        capabilities = capabilities,
+      })
+
+      -- Python
+      lspconfig.pyright.setup({
+        capabilities = capabilities,
+      })
+
+      -- Go
+      lspconfig.gopls.setup({
+        capabilities = capabilities,
+      })
+
+      -- HTML/CSS/JSON
+      lspconfig.html.setup({
+        capabilities = capabilities,
+      })
+
+      lspconfig.cssls.setup({
+        capabilities = capabilities,
+      })
+
+      lspconfig.jsonls.setup({
+        capabilities = capabilities,
+      })
     end,
   },
 })
