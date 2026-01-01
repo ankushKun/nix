@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# VPS installation script for standalone home-manager
-# This script installs Nix and home-manager on a Linux VPS
+# Linux installation script for standalone home-manager
+# This script installs Nix and home-manager on any Linux system
 
 set -e
 
-echo "================================"
-echo "Nix + Home Manager VPS Installer"
-echo "================================"
+echo "===================================="
+echo "Nix + Home Manager Linux Installer"
+echo "===================================="
 echo ""
 
 NIX_JUST_INSTALLED=false
@@ -83,9 +83,9 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     read -p "Enter hostname: " HOSTNAME
 fi
 
-# Update hosts/vps/default.nix with username
-echo "Updating VPS configuration..."
-sed -i "s/YOUR_VPS_USERNAME/$USERNAME/g" ~/.config/nix/hosts/vps/default.nix
+# Update hosts/linux/default.nix with username
+echo "Updating Linux configuration..."
+sed -i "s/YOUR_LINUX_USERNAME/$USERNAME/g" ~/.config/nix/hosts/linux/default.nix
 
 echo ""
 echo "Installing home-manager configuration..."

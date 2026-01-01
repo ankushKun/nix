@@ -45,18 +45,18 @@
         ];
       };
 
-      # Standalone Home Manager for Linux VPS
+      # Standalone Home Manager for Linux systems
       # Usage: home-manager switch --flake .#username@hostname
       homeConfigurations = {
-        # Example: "user@vps" - update to match your VPS username and hostname
-        # After cloning on VPS, run:
+        # Example: "user@hostname" - update to match your Linux username and hostname
+        # After cloning on your Linux system, run:
         # nix run home-manager/master -- switch --flake ~/.config/nix#username@hostname
         "username@hostname" = home-manager.lib.homeManagerConfiguration {
           pkgs = import nixpkgs {
             system = "x86_64-linux";
             config.allowUnfree = true;
           };
-          modules = [ ./hosts/vps/default.nix ];
+          modules = [ ./hosts/linux/default.nix ];
         };
       };
 

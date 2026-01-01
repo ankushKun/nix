@@ -2,7 +2,9 @@
 
 Weeblet's Multi-Platform Nix Configuration
 
-A unified Nix configuration for both **macOS** (via nix-darwin) and **Linux VPS** (via standalone home-manager), sharing common dotfiles and packages across platforms.
+A unified Nix configuration for both **macOS** (via nix-darwin) and **Linux** (via standalone home-manager), sharing common dotfiles and packages across platforms.
+
+Works on: macOS, Linux servers, Linux desktops, WSL, and more!
 
 ## macOS Setup
 
@@ -27,14 +29,16 @@ This script will:
 dr  # Alias for: sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp
 ```
 
-## Linux VPS Setup
+## Linux Setup
+
+Works on any Linux distribution: Ubuntu, Debian, Arch, Fedora, NixOS, WSL, and more!
 
 ### Automated Installation
 
-Run this single command on your VPS:
+Run this single command on your Linux system:
 
 ```bash
-bash <(curl -L https://raw.githubusercontent.com/ankushKun/nix/main/scripts/install-vps.sh)
+bash <(curl -L https://raw.githubusercontent.com/ankushKun/nix/main/scripts/install-linux.sh)
 ```
 
 This script will:
@@ -44,6 +48,7 @@ This script will:
 - Detect your username and hostname
 - Apply the home-manager configuration
 - Set up all shared dotfiles (neovim, zsh, tmux, etc.)
+- Set zsh as your default shell
 
 ### Manual Installation
 
@@ -67,9 +72,9 @@ If you prefer manual installation:
    ```
 
 4. **Update configuration**:
-   Edit `hosts/vps/default.nix` and replace `YOUR_VPS_USERNAME` with your actual username:
+   Edit `hosts/linux/default.nix` and replace `YOUR_LINUX_USERNAME` with your actual username:
    ```bash
-   sed -i "s/YOUR_VPS_USERNAME/$(whoami)/g" hosts/vps/default.nix
+   sed -i "s/YOUR_LINUX_USERNAME/$(whoami)/g" hosts/linux/default.nix
    ```
 
 5. **Update flake.nix**:
@@ -83,7 +88,7 @@ If you prefer manual installation:
    nix run home-manager/master -- switch --flake ~/.config/nix#$(whoami)@$(hostname)
    ```
 
-### Updating Linux VPS Configuration
+### Updating Linux Configuration
 
 ```bash
 hm  # Alias for: home-manager switch --flake ~/.config/nix#user@hostname
@@ -108,9 +113,9 @@ The following configurations work identically on both macOS and Linux:
 - **GUI Apps**: Kitty, Discord, Rectangle, Claude Code
 - **Docker**: Uses Colima
 
-### Linux VPS Only
-- **Minimal**: CLI tools and terminal applications only
-- **Docker**: Native Docker support
+### Linux Only
+- **Flexible**: Can be configured for servers (minimal) or desktops (with GUI apps)
+- **Docker**: Native Docker support (no Colima needed)
 
 ## Configuration Management
 
@@ -145,8 +150,8 @@ The following configurations work identically on both macOS and Linux:
 │   ├── home-manager.nix     # macOS home-manager config
 │   └── packages.nix         # Package definitions
 ├── hosts/
-│   └── vps/
-│       └── default.nix      # Linux VPS configuration
+│   └── linux/
+│       └── default.nix      # Linux configuration
 ├── configs/
 │   ├── shared/              # Cross-platform dotfiles
 │   │   ├── nvim-init.lua
@@ -158,7 +163,7 @@ The following configurations work identically on both macOS and Linux:
 │       └── zshrc-darwin
 └── scripts/
     ├── install.sh           # macOS installer
-    ├── install-vps.sh       # Linux VPS installer
+    ├── install-linux.sh     # Linux installer
     ├── backup.sh
     └── restore.sh
 ```
@@ -170,7 +175,8 @@ The following configurations work identically on both macOS and Linux:
 - Make sure your SSH keys are set up for GitHub access
 - Check that experimental features are enabled in your Nix config
 
-### Linux VPS
-- If `home-manager` command is not found, source your shell: `source ~/.zshrc`
+### Linux
+- If `home-manager` command is not found, source your shell: `source ~/.zshrc` or `exec zsh`
 - Ensure Nix daemon is running: `systemctl status nix-daemon`
 - Check flakes are enabled: `cat ~/.config/nix/nix.conf`
+- On WSL, you may need to restart the WSL instance after installation
