@@ -490,9 +490,6 @@ require("lazy").setup({
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter-textobjects", -- Better text objects
-    },
     config = function()
       require("nvim-treesitter.configs").setup({
         ensure_installed = {}, -- Don't auto-install parsers
@@ -518,6 +515,13 @@ require("lazy").setup({
         },
       })
     end,
+  },
+
+  -- Better text objects (must load after treesitter)
+  {
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    event = "VeryLazy",
   },
 
   -- Auto close HTML/JSX tags
@@ -867,13 +871,16 @@ require("lazy").setup({
       -- Default LSP capabilities with nvim-cmp support
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-      -- Setup function for LSP servers
-      local lspconfig = require("lspconfig")
+      -- Helper function to setup LSP servers
+      local function setup_lsp(server, config)
+        config = config or {}
+        config.capabilities = capabilities
+        require("lspconfig")[server].setup(config)
+      end
 
       -- Configure all LSP servers installed via Nix
       -- Lua
-      lspconfig.lua_ls.setup({
-        capabilities = capabilities,
+      setup_lsp("lua_ls", {
         settings = {
           Lua = {
             diagnostics = {
@@ -891,8 +898,7 @@ require("lazy").setup({
       })
 
       -- Nix
-      lspconfig.nil_ls.setup({
-        capabilities = capabilities,
+      setup_lsp("nil_ls", {
         settings = {
           ['nil'] = {
             formatting = {
@@ -903,32 +909,18 @@ require("lazy").setup({
       })
 
       -- TypeScript/JavaScript
-      lspconfig.ts_ls.setup({
-        capabilities = capabilities,
-      })
+      setup_lsp("ts_ls")
 
       -- Python
-      lspconfig.pyright.setup({
-        capabilities = capabilities,
-      })
+      setup_lsp("pyright")
 
       -- Go
-      lspconfig.gopls.setup({
-        capabilities = capabilities,
-      })
+      setup_lsp("gopls")
 
       -- HTML/CSS/JSON
-      lspconfig.html.setup({
-        capabilities = capabilities,
-      })
-
-      lspconfig.cssls.setup({
-        capabilities = capabilities,
-      })
-
-      lspconfig.jsonls.setup({
-        capabilities = capabilities,
-      })
+      setup_lsp("html")
+      setup_lsp("cssls")
+      setup_lsp("jsonls")
     end,
   },
 })
