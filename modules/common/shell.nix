@@ -46,6 +46,11 @@ in
       builtins.readFile ../../configs/shared/zshrc +
       (if isDarwin then builtins.readFile ../../configs/darwin/zshrc-darwin else "");
 
+    # Platform-specific PATH additions
+    initExtra = lib.optionalString isLinux ''
+      export PATH="$HOME/.bun/bin:$PATH"
+    '';
+
     # Shell aliases - modern alternatives
     shellAliases = {
       # Better ls (eza)
