@@ -47,7 +47,9 @@ in
       (if isDarwin then builtins.readFile ../../configs/darwin/zshrc-darwin else "");
 
     # Platform-specific PATH additions
-    initExtra = lib.optionalString isLinux ''
+    initExtra = lib.optionalString isDarwin ''
+      export PATH="/usr/local/share/dotnet:$PATH"
+    '' + lib.optionalString isLinux ''
       export PATH="$HOME/.bun/bin:$PATH"
     '';
 
