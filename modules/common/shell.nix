@@ -49,6 +49,7 @@ in
     # Platform-specific PATH additions
     initExtra = lib.optionalString isDarwin ''
       export PATH="/usr/local/share/dotnet:$PATH"
+      export PATH="$HOME/.opencode/bin:$PATH"
     '' + lib.optionalString isLinux ''
       export PATH="$HOME/.bun/bin:$PATH"
     '';
