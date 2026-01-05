@@ -1,0 +1,113 @@
+# Neovide Configuration
+# Documentation: https://neovide.dev/config-file.html
+
+# Window settings
+[window]
+# Borderless window for a cleaner look (matches Kitty)
+decorations = "none"
+
+# Opacity (0.0 = fully transparent, 1.0 = opaque)
+# Set to 0.90 to match Kitty's background_opacity
+opacity = 0.90
+
+# Blur behind window (macOS only)
+# Set to true to match Kitty's background_blur
+blur = true
+
+# Start in fullscreen
+fullscreen = false
+
+# Window size (comfortable default)
+width = 1400
+height = 900
+
+# Padding around the text area (minimal, like Kitty)
+padding-top = 5
+padding-left = 5
+padding-right = 5
+padding-bottom = 5
+
+# Frame settings
+[frame]
+# Frame rate limit (0 = unlimited, matches display refresh rate)
+rate = 60
+
+# Rendering settings
+[renderer]
+# Enable vsync for smoother rendering
+vsync = true
+
+# Font settings (matching Kitty)
+[font]
+# Normal font - MesloLGS NF to match Kitty
+normal = ["MesloLGS NF", "JetBrainsMono Nerd Font", "SF Mono", "Menlo"]
+
+# Font size - 13.0 to match Kitty
+size = 13.0
+
+# Line spacing
+line-spacing = 0.0
+
+# Cursor settings
+[cursor]
+# Cursor animation length in seconds
+animate-in-insert-mode = true
+animate-command-line = true
+
+# Cursor blink animation
+vfx = "railgun"  # Options: "", "railgun", "torpedo", "pixiedust", "sonicboom", "ripple", "wireframe"
+
+# Cursor trail size (0.0 = no trail, 1.0 = maximum trail)
+trail-size = 0.3
+
+# Performance settings
+[performance]
+# Enable multi-grid for better performance
+multigrid = true
+
+# macOS specific settings
+[macos]
+# Option key behavior
+# "meta" = treat as Alt/Meta key
+# "none" = pass through to system
+option-as-meta = "meta"
+
+# Title bar style (only matters if decorations != "none")
+# Options: "native", "transparent", "hidden"
+titlebar = "transparent"
+
+# Input settings
+[input]
+# Use logo (Cmd on macOS) key
+use-logo = false
+
+# Keyboard settings
+ime = true
+
+# Misc settings
+[misc]
+# Fork behavior - keep running after closing window
+fork = false
+
+# Idle timeout in seconds (0 = never idle)
+idle = true
+
+# Show version info on startup
+show-version = false
+
+# Animations
+[animations]
+# Scroll animation length
+scroll-duration = 0.15
+
+# Floating window animation
+windows-duration = 0.15
+
+# Neovim settings passed to Neovim on startup
+[neovim]
+# Additional args to pass to nvim
+# args = ["--noplugin"]
+
+# Environment variables
+# [environment]
+# SOME_VAR = "value"
