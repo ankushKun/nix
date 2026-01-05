@@ -320,7 +320,7 @@ require("lazy").setup({
     config = function()
       require("tokyonight").setup({
         style = "night", -- Tokyo Night theme (matches Kitty)
-        transparent = vim.g.neovide and false or false, -- Don't use transparent bg (we handle it via window transparency)
+        transparent = false,
         terminal_colors = true, -- Configure colors for terminal windows
         styles = {
           sidebars = "transparent",
@@ -373,7 +373,22 @@ require("lazy").setup({
           },
           lualine_x = { "encoding", "fileformat", "filetype" },
           lualine_y = { "progress" },
-          lualine_z = { "location" },
+          lualine_z = {
+            "location",
+            {
+              function()
+                local opencode_ok, opencode = pcall(require, "opencode")
+                if opencode_ok then
+                  return opencode.statusline()
+                end
+                return ""
+              end,
+              cond = function()
+                local opencode_ok, opencode = pcall(require, "opencode")
+                return opencode_ok
+              end,
+            }
+          },
         },
       })
     end,
@@ -1053,6 +1068,100 @@ require("lazy").setup({
       vim.keymap.set("n", "<leader>th", ":ToggleTerm direction=horizontal<CR>", { desc = "Terminal horizontal" })
       vim.keymap.set("n", "<leader>tv", ":ToggleTerm direction=vertical<CR>", { desc = "Terminal vertical" })
       vim.keymap.set("n", "<leader>tF", ":ToggleTerm direction=float<CR>", { desc = "Terminal float" })
+    end,
+  },
+
+  -- Snacks.nvim - Collection of small utility plugins
+  {
+    "folke/snacks.nvim",
+    priority = 1000,
+    lazy = false,
+    opts = {
+      input = {},      -- Better vim.ui.input
+      picker = {},     -- Better vim.ui.select
+      terminal = {},   -- Terminal management
+    },
+  },
+
+  -- OpenCode AI assistant integration
+  {
+    "NickvanDyke/opencode.nvim",
+    dependencies = {
+      "folke/snacks.nvim",
+    },
+    config = function()
+      -- OpenCode configuration
+      vim.g.opencode_opts = {
+        provider = {
+          enabled = "snacks", -- Use snacks for better UI
+        },
+        events = {
+          reload = true, -- Auto-reload edited buffers
+        },
+      }
+
+      -- Required for auto-reload
+      vim.o.autoread = true
+
+      -- Keybindings
+      -- Ask OpenCode with context
+      vim.keymap.set({ "n", "x" }, "<leader>ai", function()
+        require("opencode").ask("@this: ", { submit = true })
+      end, { desc = "Ask OpenCode" })
+
+      -- Select OpenCode action
+      vim.keymap.set({ "n", "x" }, "<leader>as", function()
+        require("opencode").select()
+      end, { desc = "OpenCode actions" })
+
+      -- Toggle OpenCode terminal
+      vim.keymap.set({ "n", "t" }, "<C-,>", function()
+        require("opencode").toggle()
+      end, { desc = "Toggle OpenCode" })
+
+      -- Operator to add range to OpenCode
+      vim.keymap.set({ "n", "x" }, "go", function()
+        return require("opencode").operator("@this ")
+      end, { expr = true, desc = "Add range to OpenCode" })
+
+      -- Add line to OpenCode
+      vim.keymap.set("n", "goo", function()
+        return require("opencode").operator("@this ") .. "_"
+      end, { expr = true, desc = "Add line to OpenCode" })
+
+      -- Scroll OpenCode messages
+      vim.keymap.set("n", "<S-C-u>", function()
+        require("opencode").command("session.half.page.up")
+      end, { desc = "OpenCode half page up" })
+
+      vim.keymap.set("n", "<S-C-d>", function()
+        require("opencode").command("session.half.page.down")
+      end, { desc = "OpenCode half page down" })
+
+      -- Quick prompts
+      vim.keymap.set({ "n", "x" }, "<leader>ae", function()
+        require("opencode").prompt("explain")
+      end, { desc = "Explain code" })
+
+      vim.keymap.set({ "n", "x" }, "<leader>ar", function()
+        require("opencode").prompt("review")
+      end, { desc = "Review code" })
+
+      vim.keymap.set({ "n", "x" }, "<leader>af", function()
+        require("opencode").prompt("fix")
+      end, { desc = "Fix diagnostics" })
+
+      vim.keymap.set({ "n", "x" }, "<leader>at", function()
+        require("opencode").prompt("test")
+      end, { desc = "Add tests" })
+
+      vim.keymap.set({ "n", "x" }, "<leader>ad", function()
+        require("opencode").prompt("document")
+      end, { desc = "Document code" })
+
+      vim.keymap.set({ "n", "x" }, "<leader>ao", function()
+        require("opencode").prompt("optimize")
+      end, { desc = "Optimize code" })
     end,
   },
 
