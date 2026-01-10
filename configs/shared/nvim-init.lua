@@ -59,8 +59,8 @@ if vim.g.neovide then
 
   -- Set background color with alpha channel for transparency
   -- Format: #RRGGBBAA where AA is alpha (00 = transparent, FF = opaque)
-  -- 0.90 opacity = E6 in hex (230/255)
-  vim.g.neovide_background_color = '#101015E6'
+  -- FF = fully opaque (no transparency)
+  vim.g.neovide_background_color = '#101015FF'
 
   -- Floating blur
   vim.g.neovide_floating_blur_amount_x = 2.0
@@ -96,14 +96,15 @@ if vim.g.neovide then
   vim.g.neovide_cursor_antialiasing = true
   vim.g.neovide_cursor_animate_in_insert_mode = true
   vim.g.neovide_cursor_animate_command_line = true
-  vim.g.neovide_cursor_vfx_mode = "railgun" -- Options: "", "railgun", "torpedo", "pixiedust", "sonicboom", "ripple", "wireframe"
+  vim.g.neovide_cursor_vfx_mode =
+  "railgun" -- Options: "", "railgun", "torpedo", "pixiedust", "sonicboom", "ripple", "wireframe"
 
   -- Scroll animation
   vim.g.neovide_scroll_animation_length = 0.15
 
   -- Keyboard shortcuts for Neovide
   -- Cmd+V for paste (macOS style)
-  vim.keymap.set({'n', 'v', 'i', 'c'}, '<D-v>', function()
+  vim.keymap.set({ 'n', 'v', 'i', 'c' }, '<D-v>', function()
     if vim.fn.mode() == 'i' or vim.fn.mode() == 'c' then
       return '<C-r>+'
     else
@@ -319,20 +320,28 @@ require("lazy").setup({
     priority = 1000,
     config = function()
       require("tokyonight").setup({
-        style = "night", -- Tokyo Night theme (matches Kitty)
+        style = "night",         -- Tokyo Night theme (matches Kitty)
         transparent = false,
-        terminal_colors = true, -- Configure colors for terminal windows
+        terminal_colors = false, -- Configure colors for terminal windows
         styles = {
-          sidebars = "transparent",
-          floats = "transparent",
+          -- sidebars = "transparent",
+          -- floats = "transparent",
           comments = { italic = true },
           keywords = { italic = false },
         },
         -- Override specific colors to match Kitty if needed
         on_colors = function(colors)
-          -- Kitty uses these exact colors from Tokyo Night
-          colors.bg = "#101015" -- Matches Kitty background
+          -- Keep default Tokyo Night background (#1a1b26)
           colors.fg = "#c0caf5" -- Matches Kitty foreground
+        end,
+        -- Override highlights for less eye strain
+        on_highlights = function(hl, c)
+          -- Change JSX/HTML tags from red to purple
+          hl["@tag"] = { fg = "#bb9af7" }
+          hl["@tag.tsx"] = { fg = "#bb9af7" }
+          hl["@tag.javascript"] = { fg = "#bb9af7" }
+          hl["@tag.delimiter"] = { fg = "#565f89" } -- Muted color for < > /
+          hl["@tag.attribute"] = { fg = "#7dcfff" } -- Cyan for attributes
         end,
       })
       vim.cmd([[colorscheme tokyonight]])
@@ -870,17 +879,17 @@ require("lazy").setup({
         layouts = {
           {
             elements = {
-              { id = "scopes", size = 0.25 },
+              { id = "scopes",      size = 0.25 },
               { id = "breakpoints", size = 0.25 },
-              { id = "stacks", size = 0.25 },
-              { id = "watches", size = 0.25 },
+              { id = "stacks",      size = 0.25 },
+              { id = "watches",     size = 0.25 },
             },
             size = 40,
             position = "left",
           },
           {
             elements = {
-              { id = "repl", size = 0.5 },
+              { id = "repl",    size = 0.5 },
               { id = "console", size = 0.5 },
             },
             size = 10,
@@ -1077,9 +1086,9 @@ require("lazy").setup({
     priority = 1000,
     lazy = false,
     opts = {
-      input = {},      -- Better vim.ui.input
-      picker = {},     -- Better vim.ui.select
-      terminal = {},   -- Terminal management
+      input = {},    -- Better vim.ui.input
+      picker = {},   -- Better vim.ui.select
+      terminal = {}, -- Terminal management
     },
   },
 
@@ -1296,14 +1305,14 @@ require("lazy").setup({
       require("luasnip.loaders.from_vscode").lazy_load()
 
       -- Jump forward/backward in snippets
-      vim.keymap.set({"i", "s"}, "<C-k>", function()
+      vim.keymap.set({ "i", "s" }, "<C-k>", function()
         local ls = require("luasnip")
         if ls.expand_or_jumpable() then
           ls.expand_or_jump()
         end
       end, { desc = "Snippet jump forward" })
 
-      vim.keymap.set({"i", "s"}, "<C-j>", function()
+      vim.keymap.set({ "i", "s" }, "<C-j>", function()
         local ls = require("luasnip")
         if ls.jumpable(-1) then
           ls.jump(-1)
@@ -1485,9 +1494,29 @@ require("lazy").setup({
     end,
   },
 
-  -- LSP config
+  -- Mason + LSP config (consolidated for proper load order)
   {
     "neovim/nvim-lspconfig",
+    dependencies = {
+      -- Mason must be set up before mason-lspconfig
+      {
+        "williamboman/mason.nvim",
+        config = function()
+          require("mason").setup({
+            ui = {
+              border = "rounded",
+              icons = {
+                package_installed = "✓",
+                package_pending = "➜",
+                package_uninstalled = "✗",
+              },
+            },
+            max_concurrent_installers = 4,
+          })
+        end,
+      },
+      "williamboman/mason-lspconfig.nvim",
+    },
     config = function()
       -- Configure diagnostics display
       vim.diagnostic.config({
@@ -1514,102 +1543,139 @@ require("lazy").setup({
         vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
       end
 
-      -- Setup LSP keybindings when LSP attaches
-      vim.api.nvim_create_autocmd("LspAttach", {
-        group = vim.api.nvim_create_augroup("lsp_attach", { clear = true }),
-        callback = function(event)
-          local map = function(keys, func, desc)
-            vim.keymap.set("n", keys, func, { buffer = event.buf, desc = "LSP: " .. desc })
-          end
-
-          -- Attach navic if available
-          local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.server_capabilities.documentSymbolProvider then
-            local navic_ok, navic = pcall(require, "nvim-navic")
-            if navic_ok then
-              navic.attach(client, event.buf)
-            end
-          end
-
-          -- Standard LSP keybindings (following Neovim conventions)
-          map("gd", vim.lsp.buf.definition, "Go to definition")
-          map("gD", vim.lsp.buf.declaration, "Go to declaration")
-          map("gr", vim.lsp.buf.references, "Go to references")
-          map("gI", vim.lsp.buf.implementation, "Go to implementation")
-          map("gy", vim.lsp.buf.type_definition, "Go to type definition")
-          map("K", vim.lsp.buf.hover, "Hover documentation")
-          map("<leader>ca", vim.lsp.buf.code_action, "Code action")
-          map("<leader>cr", vim.lsp.buf.rename, "Rename (simple)")
-          -- Format is available globally via <leader>f
-
-          -- Diagnostics navigation (standard bracket mappings)
-          map("[d", vim.diagnostic.goto_prev, "Previous diagnostic")
-          map("]d", vim.diagnostic.goto_next, "Next diagnostic")
-          map("<leader>cd", vim.diagnostic.open_float, "Show diagnostic")
-          map("<leader>cl", vim.diagnostic.setloclist, "Diagnostic loclist")
-        end,
-      })
-
       -- Default LSP capabilities with nvim-cmp support
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-      -- Helper function to setup LSP servers (compatible with both old and new API)
-      local function setup_lsp(server, config)
-        config = config or {}
-        config.capabilities = capabilities
-
-        -- Use new vim.lsp.config API if available (Neovim 0.11+)
-        if vim.lsp.config then
-          vim.lsp.config(server, config)
-        else
-          -- Fallback to old lspconfig API
-          require("lspconfig")[server].setup(config)
+      -- Common on_attach function for all LSP servers
+      local on_attach = function(client, bufnr)
+        local map = function(keys, func, desc)
+          vim.keymap.set("n", keys, func, { buffer = bufnr, desc = "LSP: " .. desc })
         end
+
+        -- Attach navic if available
+        if client.server_capabilities.documentSymbolProvider then
+          local navic_ok, navic = pcall(require, "nvim-navic")
+          if navic_ok then
+            navic.attach(client, bufnr)
+          end
+        end
+
+        -- Standard LSP keybindings (following Neovim conventions)
+        map("gd", vim.lsp.buf.definition, "Go to definition")
+        map("gD", vim.lsp.buf.declaration, "Go to declaration")
+        map("gr", vim.lsp.buf.references, "Go to references")
+        map("gI", vim.lsp.buf.implementation, "Go to implementation")
+        map("gy", vim.lsp.buf.type_definition, "Go to type definition")
+        map("K", vim.lsp.buf.hover, "Hover documentation")
+        map("<leader>ca", vim.lsp.buf.code_action, "Code action")
+        map("<leader>cr", vim.lsp.buf.rename, "Rename (simple)")
+        -- Format is available globally via <leader>f
+
+        -- Diagnostics navigation (standard bracket mappings)
+        map("[d", vim.diagnostic.goto_prev, "Previous diagnostic")
+        map("]d", vim.diagnostic.goto_next, "Next diagnostic")
+        map("<leader>cd", vim.diagnostic.open_float, "Show diagnostic")
+        map("<leader>cl", vim.diagnostic.setloclist, "Diagnostic loclist")
       end
 
-      -- Configure all LSP servers installed via Nix
-      -- Lua
-      setup_lsp("lua_ls", {
-        settings = {
-          Lua = {
-            diagnostics = {
-              globals = { 'vim' },
-            },
-            workspace = {
-              library = vim.api.nvim_get_runtime_file("", true),
-              checkThirdParty = false,
-            },
-            telemetry = {
-              enable = false,
-            },
-          },
-        },
-      })
-
-      -- Nix
-      setup_lsp("nil_ls", {
-        settings = {
-          ['nil'] = {
-            formatting = {
-              command = { "nixpkgs-fmt" },
+      -- Server-specific settings
+      local server_settings = {
+        lua_ls = {
+          settings = {
+            Lua = {
+              diagnostics = {
+                globals = { 'vim' },
+              },
+              workspace = {
+                library = vim.api.nvim_get_runtime_file("", true),
+                checkThirdParty = false,
+              },
+              telemetry = {
+                enable = false,
+              },
             },
           },
         },
+        nil_ls = {
+          settings = {
+            ['nil'] = {
+              formatting = {
+                command = { "nixpkgs-fmt" },
+              },
+            },
+          },
+        },
+        pyright = {
+          settings = {
+            python = {
+              analysis = {
+                typeCheckingMode = "basic",
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+              },
+            },
+          },
+        },
+        gopls = {
+          settings = {
+            gopls = {
+              analyses = {
+                unusedparams = true,
+              },
+              staticcheck = true,
+            },
+          },
+        },
+        rust_analyzer = {
+          settings = {
+            ["rust-analyzer"] = {
+              checkOnSave = {
+                command = "clippy",
+              },
+            },
+          },
+        },
+      }
+
+      -- LSP servers to automatically install
+      local ensure_installed = {
+        "lua_ls",        -- Lua
+        "ts_ls",         -- TypeScript/JavaScript
+        "pyright",       -- Python
+        "gopls",         -- Go
+        "rust_analyzer", -- Rust
+        "html",          -- HTML
+        "cssls",         -- CSS
+        "jsonls",        -- JSON
+        "yamlls",        -- YAML
+        "bashls",        -- Bash
+        "nil_ls",        -- Nix
+      }
+
+      -- Setup mason-lspconfig
+      require("mason-lspconfig").setup({
+        ensure_installed = ensure_installed,
+        automatic_installation = true,
+        handlers = {
+          -- Default handler for all servers
+          function(server_name)
+            local config = {
+              capabilities = capabilities,
+              on_attach = on_attach,
+            }
+
+            -- Merge server-specific settings if they exist
+            if server_settings[server_name] then
+              config = vim.tbl_deep_extend("force", config, server_settings[server_name])
+            end
+
+            require("lspconfig")[server_name].setup(config)
+          end,
+        },
       })
 
-      -- TypeScript/JavaScript
-      setup_lsp("ts_ls")
-
-      -- Python
-      setup_lsp("pyright")
-
-      -- Go
-      setup_lsp("gopls")
-
-      -- HTML/CSS/JSON
-      setup_lsp("html")
-      setup_lsp("cssls")
-      setup_lsp("jsonls")
+      -- Keybinding to open Mason
+      vim.keymap.set("n", "<leader>cm", ":Mason<CR>", { desc = "Open Mason" })
     end,
   },
 })
