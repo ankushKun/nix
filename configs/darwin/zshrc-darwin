@@ -11,3 +11,6 @@ export PATH="$HOME/.antigravity/antigravity/bin:$PATH"
 
 # Kitty SSH kitten (requires kitty terminal)
 alias sshk="kitty +kitten ssh"
+
+# Kitty with window decorations and no transparency
+alias kittyw="kitty -o hide_window_decorations=no -o background_opacity=1.0"
