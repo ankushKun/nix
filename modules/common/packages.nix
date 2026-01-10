@@ -22,6 +22,7 @@
     nil # Nix LSP
 
     # CLI Tools
+    home-manager # Home Manager CLI
     ripgrep    # Better grep
     fd         # Better find
     git        # Version control

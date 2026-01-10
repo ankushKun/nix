@@ -86,6 +86,7 @@ in
     } // lib.optionalAttrs isDarwin {
       # Darwin-specific aliases
       dr = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
+      hmr = "home-manager switch --flake ~/.config/nix#weeblets-mbp";
       nix-config = "nvim ~/.config/nix/flake.nix";
       icloud = "cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs";
     } // lib.optionalAttrs isLinux {
