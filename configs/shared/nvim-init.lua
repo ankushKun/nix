@@ -1096,13 +1096,18 @@ require("lazy").setup({
   {
     "NickvanDyke/opencode.nvim",
     dependencies = {
-      "folke/snacks.nvim",
+      { "folke/snacks.nvim", opts = { input = {}, picker = {}, terminal = {} } },
     },
     config = function()
       -- OpenCode configuration
       vim.g.opencode_opts = {
         provider = {
-          enabled = "snacks", -- Use snacks for better UI
+          enabled = "tmux",
+          cmd = "opencode --port 7847",
+          tmux = {
+            direction = "right", -- Open in a pane to the right
+            size = 40,           -- Percentage of screen width
+          },
         },
         events = {
           reload = true, -- Auto-reload edited buffers
@@ -1124,7 +1129,7 @@ require("lazy").setup({
       end, { desc = "OpenCode actions" })
 
       -- Toggle OpenCode terminal
-      vim.keymap.set({ "n", "t" }, "<C-,>", function()
+      vim.keymap.set({ "n", "t" }, "<leader>oc", function()
         require("opencode").toggle()
       end, { desc = "Toggle OpenCode" })
 
@@ -1137,15 +1142,6 @@ require("lazy").setup({
       vim.keymap.set("n", "goo", function()
         return require("opencode").operator("@this ") .. "_"
       end, { expr = true, desc = "Add line to OpenCode" })
-
-      -- Scroll OpenCode messages
-      vim.keymap.set("n", "<S-C-u>", function()
-        require("opencode").command("session.half.page.up")
-      end, { desc = "OpenCode half page up" })
-
-      vim.keymap.set("n", "<S-C-d>", function()
-        require("opencode").command("session.half.page.down")
-      end, { desc = "OpenCode half page down" })
 
       -- Quick prompts
       vim.keymap.set({ "n", "x" }, "<leader>ae", function()
