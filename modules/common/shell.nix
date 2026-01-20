@@ -9,10 +9,16 @@ in
   programs.zsh = {
     enable = true;
     enableCompletion = true;
+    
+    # Completion caching for faster startup
+    completionInit = "autoload -U compinit && compinit -C";
 
+    # Oh My Zsh - minimal plugins for faster startup
     oh-my-zsh = {
       enable = true;
       plugins = [ "git" ];
+      # Custom settings for performance
+      custom = "";
     };
 
     plugins = [
@@ -42,25 +48,26 @@ in
       share = true;
     };
 
-    # Load custom zshrc (platform-specific)
-    initContent =
-      builtins.readFile ../../configs/shared/zshrc +
-      (if isDarwin then builtins.readFile ../../configs/darwin/zshrc-darwin else "");
-
-    # Performance optimizations
-    initExtraBeforeCompInit = ''
-      # Reduce plugin overhead
-      ZSH_AUTOSUGGEST_MANUAL_REBIND=1
-      ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
-    '';
-
-    # Platform-specific PATH additions
-    initExtra = lib.optionalString isDarwin ''
-      export PATH="/usr/local/share/dotnet:$PATH"
-      export PATH="$HOME/.opencode/bin:$PATH"
-    '' + lib.optionalString isLinux ''
-      export PATH="$HOME/.bun/bin:$PATH"
-    '';
+    # Load custom zshrc (platform-specific) + optimizations + PATH additions
+    initContent = lib.mkMerge [
+      # Performance optimizations (loaded early)
+      (lib.mkOrder 550 ''
+        # Reduce plugin overhead
+        ZSH_AUTOSUGGEST_MANUAL_REBIND=1
+        ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+      '')
+      
+      # Main configuration
+      (builtins.readFile ../../configs/shared/zshrc +
+       (if isDarwin then builtins.readFile ../../configs/darwin/zshrc-darwin else "") +
+       (lib.optionalString isDarwin ''
+         export PATH="/usr/local/share/dotnet:$PATH"
+         export PATH="$HOME/.opencode/bin:$PATH"
+       '') +
+       (lib.optionalString isLinux ''
+         export PATH="$HOME/.bun/bin:$PATH"
+       ''))
+    ];
 
     # Shell aliases - modern alternatives
     shellAliases = {
