@@ -26,6 +26,7 @@ in
         src = "${pkgs.zsh-autosuggestions}/share/zsh-autosuggestions";
         file = "zsh-autosuggestions.zsh";
       }
+      # Syntax highlighting should be loaded last for performance
       {
         name = "zsh-syntax-highlighting";
         src = "${pkgs.zsh-syntax-highlighting}/share/zsh-syntax-highlighting";
@@ -45,6 +46,13 @@ in
     initContent =
       builtins.readFile ../../configs/shared/zshrc +
       (if isDarwin then builtins.readFile ../../configs/darwin/zshrc-darwin else "");
+
+    # Performance optimizations
+    initExtraBeforeCompInit = ''
+      # Reduce plugin overhead
+      ZSH_AUTOSUGGEST_MANUAL_REBIND=1
+      ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+    '';
 
     # Platform-specific PATH additions
     initExtra = lib.optionalString isDarwin ''
@@ -95,11 +103,18 @@ in
     };
   };
 
-  # Direnv integration
+  # Direnv integration (optimized with caching)
   programs.direnv = {
     enable = true;
     enableZshIntegration = true;
     nix-direnv.enable = true;
+    
+    config = {
+      global = {
+        # Reduce startup time by caching
+        warn_timeout = "30s";
+      };
+    };
   };
 
   # Tmux configuration
