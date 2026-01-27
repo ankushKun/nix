@@ -40,7 +40,6 @@
     yarn       # Alternative npm client
     bun        # Fast JavaScript runtime & package manager
     pnpm       # Fast, disk space efficient package manager
-    nvm        # Node Version Manager
 
     # Development tools
     go
