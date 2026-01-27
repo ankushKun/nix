@@ -66,6 +66,11 @@ in
        '') +
        (lib.optionalString isLinux ''
          export PATH="$HOME/.bun/bin:$PATH"
+         
+         # NVM setup
+         export NVM_DIR="$HOME/.nvm"
+         [ -s "${pkgs.nvm}/nvm.sh" ] && . "${pkgs.nvm}/nvm.sh"
+         [ -s "${pkgs.nvm}/bash_completion" ] && . "${pkgs.nvm}/bash_completion"
        ''))
     ];
 
