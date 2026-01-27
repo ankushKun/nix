@@ -64,14 +64,14 @@ in
          export PATH="/usr/local/share/dotnet:$PATH"
          export PATH="$HOME/.opencode/bin:$PATH"
        '') +
-       (lib.optionalString isLinux ''
-         export PATH="$HOME/.bun/bin:$PATH"
-         
-         # NVM setup
-         export NVM_DIR="$HOME/.nvm"
-         [ -s "${pkgs.nvm}/nvm.sh" ] && . "${pkgs.nvm}/nvm.sh"
-         [ -s "${pkgs.nvm}/bash_completion" ] && . "${pkgs.nvm}/bash_completion"
-       ''))
+         (lib.optionalString isLinux ''
+          export PATH="$HOME/.bun/bin:$PATH"
+          
+          # NVM setup
+          export NVM_DIR="$HOME/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+          [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+        ''))
     ];
 
     # Shell aliases - modern alternatives
