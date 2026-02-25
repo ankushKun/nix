@@ -3,11 +3,8 @@
 {
   # System-wide packages (installed at the system level)
   systemPackages = [
-    pkgs.claude-code
     pkgs.kitty
     # pkgs.vscode
-    pkgs.discord
-    # pkgs.brave
     pkgs.rectangle
     # pkgs.mas  # Mac App Store CLI
     pkgs.meslo-lgs-nf
@@ -24,15 +21,6 @@
     # Editors
     neovim
 
-    # Language servers
-    nodePackages.typescript-language-server
-    nodePackages.vscode-langservers-extracted
-    lua-language-server
-    pyright
-    # rust-analyzer is provided by rustup
-    gopls
-    nil # Nix LSP
-
     # CLI Tools
     ripgrep    # Better grep
     fd         # Better find
@@ -47,10 +35,7 @@
     nix-direnv # Faster direnv with Nix
 
     # Package managers & runtimes
-    nodejs     # Node.js runtime (includes npm)
-    yarn       # Alternative npm client
     bun        # Fast JavaScript runtime & package manager
-    pnpm       # Fast, disk space efficient package manager
 
     go
     docker

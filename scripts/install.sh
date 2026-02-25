@@ -54,10 +54,8 @@ else
     print_status "Installing Xcode Command Line Tools..."
     echo -e "${YELLOW}A dialog will appear - please click 'Install' and wait for completion${NC}"
 
-    # Trigger the installation
     xcode-select --install &> /dev/null || true
 
-    # Wait for installation to complete
     echo -e "${YELLOW}Waiting for Xcode Command Line Tools installation...${NC}"
     until xcode-select -p &> /dev/null; do
         sleep 5
@@ -84,20 +82,37 @@ if [ "$NIX_ALREADY_INSTALLED" = false ]; then
     if sh <(curl -L https://nixos.org/nix/install); then
         print_success "Nix installed successfully"
 
-        # Source Nix profile
+        # Source Nix profile and force PATH update for current session
         if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
             . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
         fi
+        if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
+            . "$HOME/.nix-profile/etc/profile.d/nix.sh"
+        fi
+        # Explicitly add nix to PATH for this session regardless
+        export PATH="/nix/var/nix/profiles/default/bin:$PATH"
     else
         print_error "Nix installation failed"
         exit 1
     fi
 else
-    # Source Nix profile if needed
+    # Source Nix profile and force PATH update for current session
     if [ -e '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]; then
         . '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
     fi
+    if [ -e "$HOME/.nix-profile/etc/profile.d/nix.sh" ]; then
+        . "$HOME/.nix-profile/etc/profile.d/nix.sh"
+    fi
+    # Explicitly add nix to PATH for this session regardless
+    export PATH="/nix/var/nix/profiles/default/bin:$PATH"
 fi
+
+# Find nix binary using full path since sudo won't have it in PATH
+NIX_BIN="/nix/var/nix/profiles/default/bin/nix"
+if [ ! -f "$NIX_BIN" ]; then
+    NIX_BIN=$(which nix 2>/dev/null || echo "nix")
+fi
+print_success "Using nix binary: $NIX_BIN"
 
 # Step 4: Configure Nix for flakes
 print_status "Configuring Nix for flakes and nix-command..."
@@ -133,24 +148,19 @@ else
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         print_status "Generating SSH key..."
 
-        # Get email for SSH key
         read -p "Enter your GitHub email: " GITHUB_EMAIL
 
-        # Create .ssh directory if it doesn't exist
         mkdir -p "$HOME/.ssh"
         chmod 700 "$HOME/.ssh"
 
-        # Ask about passphrase
         echo ""
         echo -e "${YELLOW}GitHub recommends protecting your SSH key with a passphrase${NC}"
         read -p "Do you want to set a passphrase? (y/n) " -n 1 -r
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
-            # Generate SSH key with passphrase prompt
             ssh-keygen -t ed25519 -C "$GITHUB_EMAIL" -f "$SSH_KEY_PATH"
             USE_KEYCHAIN=true
         else
-            # Generate SSH key without passphrase
             ssh-keygen -t ed25519 -C "$GITHUB_EMAIL" -f "$SSH_KEY_PATH" -N ""
             USE_KEYCHAIN=false
         fi
@@ -158,19 +168,15 @@ else
         print_success "SSH key generated at $SSH_KEY_PATH"
         SSH_KEY_EXISTS=true
 
-        # Configure SSH config file
         print_status "Configuring SSH config..."
         SSH_CONFIG="$HOME/.ssh/config"
 
-        # Create config file if it doesn't exist
         touch "$SSH_CONFIG"
         chmod 600 "$SSH_CONFIG"
 
-        # Check if github.com host already exists in config
         if grep -q "^Host github.com" "$SSH_CONFIG"; then
             print_warning "GitHub host already configured in SSH config"
         else
-            # Add GitHub SSH configuration
             cat >> "$SSH_CONFIG" << EOF
 
 Host github.com
@@ -187,11 +193,8 @@ fi
 if [ "$SSH_KEY_EXISTS" = true ]; then
     print_status "Starting ssh-agent and adding key..."
 
-    # Start ssh-agent
     eval "$(ssh-agent -s)" > /dev/null
 
-    # Add SSH key to ssh-agent with keychain support
-    # Try --apple-use-keychain first (newer macOS), fall back to -K (older macOS)
     if ssh-add --help 2>&1 | grep -q "apple-use-keychain"; then
         ssh-add --apple-use-keychain "$SSH_KEY_PATH" 2>/dev/null
     else
@@ -224,7 +227,6 @@ else
         echo "  3. Paste the key and click 'Add SSH key'"
         echo ""
 
-        # Copy to clipboard if pbcopy is available
         if command -v pbcopy &> /dev/null; then
             cat "$SSH_KEY_PATH.pub" | pbcopy
             print_success "SSH key copied to clipboard!"
@@ -254,9 +256,7 @@ if [ -d "$INSTALL_DIR/.git" ]; then
 else
     print_status "Cloning configuration repository..."
 
-    # Check if directory exists and has files other than nix.conf
     if [ -d "$INSTALL_DIR" ]; then
-        # Check for files other than nix.conf using bash built-ins
         HAS_OTHER_FILES=false
         shopt -s nullglob dotglob
         for item in "$INSTALL_DIR"/*; do
@@ -273,25 +273,21 @@ else
             exit 1
         fi
 
-        # If only nix.conf exists, back it up temporarily
         if [ -f "$INSTALL_DIR/nix.conf" ]; then
             print_status "Backing up existing nix.conf..."
             mv "$INSTALL_DIR/nix.conf" "$INSTALL_DIR.nix.conf.backup"
         fi
 
-        # Remove the directory to allow git clone
         rmdir "$INSTALL_DIR" 2>/dev/null || true
     fi
 
     git clone "$REPO_URL" "$INSTALL_DIR"
     print_success "Repository cloned to $INSTALL_DIR"
 
-    # Restore nix.conf if it was backed up and doesn't exist in the repo
     if [ -f "$INSTALL_DIR.nix.conf.backup" ] && [ ! -f "$INSTALL_DIR/nix.conf" ]; then
         print_status "Restoring nix.conf..."
         mv "$INSTALL_DIR.nix.conf.backup" "$INSTALL_DIR/nix.conf"
     elif [ -f "$INSTALL_DIR.nix.conf.backup" ]; then
-        # Clean up backup if repo already has nix.conf
         rm "$INSTALL_DIR.nix.conf.backup"
     fi
 fi
@@ -351,7 +347,51 @@ else
     print_success "No conflicting system files found"
 fi
 
-# Step 9: Run the initial Darwin rebuild
+# Step 9: Install Homebrew if not present
+print_status "Checking for Homebrew installation..."
+if command -v brew &> /dev/null; then
+    print_success "Homebrew is already installed"
+else
+    print_warning "Homebrew not found, installing..."
+    echo -e "${YELLOW}This may require your sudo password${NC}"
+    if /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"; then
+        print_success "Homebrew installed successfully"
+
+        # Add brew to PATH for the rest of this script
+        if [[ -f "/opt/homebrew/bin/brew" ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        elif [[ -f "/usr/local/bin/brew" ]]; then
+            eval "$(/usr/local/bin/brew shellenv)"
+        fi
+    else
+        print_error "Homebrew installation failed"
+        exit 1
+    fi
+fi
+
+# Step 10: Install NVM if not present
+print_status "Checking for NVM installation..."
+if [ -d "$HOME/.nvm" ] || command -v nvm &> /dev/null; then
+    print_success "NVM is already installed"
+else
+    print_warning "NVM not found, installing..."
+    NVM_LATEST=$(curl -s https://api.github.com/repos/nvm-sh/nvm/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+    if [ -z "$NVM_LATEST" ]; then
+        NVM_LATEST="v0.40.1"  # fallback version
+    fi
+    if curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_LATEST/install.sh" | bash; then
+        print_success "NVM $NVM_LATEST installed successfully"
+
+        # Load NVM for the rest of this script
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    else
+        print_error "NVM installation failed"
+        exit 1
+    fi
+fi
+
+# Step 11: Run the initial Darwin rebuild
 print_status "Building and applying Nix Darwin configuration..."
 echo -e "${YELLOW}This may take a while on first run...${NC}"
 echo -e "${YELLOW}You will be prompted for your sudo password${NC}"
@@ -359,18 +399,18 @@ echo ""
 
 cd "$INSTALL_DIR"
 
-if sudo nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake "$INSTALL_DIR#$FLAKE_NAME"; then
+if sudo "$NIX_BIN" --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake "$INSTALL_DIR#$FLAKE_NAME"; then
     print_success "Nix Darwin configuration applied successfully!"
 else
     print_error "Configuration build failed"
     echo ""
     echo "You can try running manually with:"
     echo "  cd $INSTALL_DIR"
-    echo "  sudo nix --extra-experimental-features \"nix-command flakes\" run nix-darwin -- switch --flake .#$FLAKE_NAME"
+    echo "  sudo $NIX_BIN --extra-experimental-features \"nix-command flakes\" run nix-darwin -- switch --flake .#$FLAKE_NAME"
     exit 1
 fi
 
-# Step 10: Make scripts executable
+# Step 12: Make scripts executable
 print_status "Setting up helper scripts..."
 chmod +x "$INSTALL_DIR/scripts/backup.sh" "$INSTALL_DIR/scripts/restore.sh" 2>/dev/null || true
 print_success "Scripts are ready to use"
