@@ -13,14 +13,6 @@ in
     # Completion caching for faster startup
     completionInit = "autoload -U compinit && compinit -C";
 
-    # Oh My Zsh - minimal plugins for faster startup
-    oh-my-zsh = {
-      enable = true;
-      plugins = [ "git" ];
-      # Custom settings for performance
-      custom = "";
-    };
-
     plugins = [
       {
         name = "powerlevel10k";

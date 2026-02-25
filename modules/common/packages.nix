@@ -13,14 +13,6 @@
     # Editors
     neovim
 
-    # Language servers
-    nodePackages.typescript-language-server
-    nodePackages.vscode-langservers-extracted
-    lua-language-server
-    pyright
-    gopls
-    nil # Nix LSP
-
     # CLI Tools
     home-manager # Home Manager CLI
     ripgrep    # Better grep
@@ -36,10 +28,8 @@
     nix-direnv # Faster direnv with Nix
 
     # Package managers & runtimes
-    nodejs     # Node.js runtime (includes npm)
-    yarn       # Alternative npm client
     bun        # Fast JavaScript runtime & package manager
-    pnpm       # Fast, disk space efficient package manager
+    # Node.js managed via nvm
 
     # Development tools
     go
