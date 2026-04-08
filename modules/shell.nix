@@ -36,7 +36,7 @@
       share = true;
     };
 
-    # Load custom zshrc + PATH additions
+    # Load custom zshrc
     initContent = lib.mkMerge [
       # Performance optimizations (loaded early)
       (lib.mkOrder 550 ''
@@ -45,28 +45,12 @@
         ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
       '')
 
-      # Main configuration
-      (builtins.readFile ../configs/shared/zshrc +
-       builtins.readFile ../configs/darwin/zshrc-darwin +
-       ''
-         export PATH="/usr/local/share/dotnet:$PATH"
-         export PATH="$HOME/.opencode/bin:$PATH"
-         export PATH="/Users/weeblet/.bun/bin:$PATH"
-       '')
+      # Main configuration (p10k, ascii art, nvm lazy-loading)
+      (builtins.readFile ../configs/zshrc)
     ];
 
     # Shell aliases
     shellAliases = {
-      # Better ls (eza)
-      ls = "eza --icons --group-directories-first";
-      ll = "eza --icons --group-directories-first -l";
-      la = "eza --icons --group-directories-first -la";
-      lt = "eza --icons --group-directories-first --tree";
-      l = "eza --icons --group-directories-first -lah";
-
-      # Better cat (bat)
-      cat = "bat --style=auto";
-
       # Better grep (ripgrep)
       grep = "rg";
 
@@ -85,12 +69,39 @@
       gb = "git branch";
       lg = "lazygit";
 
+      # Editor aliases
+      sv = "sudo nvim";
+      zshconfig = "nvim ~/.zshrc";
+
+      # Kitty aliases
+      sshk = "kitty +kitten ssh";
+      kittyw = "kitty -o hide_window_decorations=no -o background_opacity=1.0";
+
       # Darwin aliases
       dr = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
       hmr = "home-manager switch --flake ~/.config/nix#weeblets-mbp";
       nix-config = "nvim ~/.config/nix/flake.nix";
       icloud = "cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs";
     };
+  };
+
+  # Fzf with shell integration (Ctrl+R history, Ctrl+T file finder)
+  programs.fzf = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  # Bat (better cat)
+  programs.bat = {
+    enable = true;
+    config.style = "auto";
+  };
+
+  # Eza (better ls)
+  programs.eza = {
+    enable = true;
+    icons = "auto";
+    extraOptions = [ "--group-directories-first" ];
   };
 
   # Direnv integration (optimized with caching)
@@ -110,9 +121,9 @@
   # Tmux configuration
   programs.tmux = {
     enable = true;
-    extraConfig = builtins.readFile ../configs/shared/tmux.conf;
+    extraConfig = builtins.readFile ../configs/tmux.conf;
   };
 
   # Link Powerlevel10k config
-  home.file.".p10k.zsh".source = ../configs/shared/p10k.zsh;
+  home.file.".p10k.zsh".source = ../configs/p10k.zsh;
 }

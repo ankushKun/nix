@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 
 {
   home.packages = with pkgs; [
@@ -17,12 +17,9 @@
     ripgrep    # Better grep
     fd         # Better find
     git        # Version control
-    fzf        # Fuzzy finder
     lazygit    # Git TUI
     tree-sitter
     jq         # JSON processor
-    bat        # Better cat
-    eza        # Better ls
     direnv     # Per-directory environments
     nix-direnv # Faster direnv with Nix
 

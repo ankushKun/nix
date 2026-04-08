@@ -17,7 +17,7 @@ FLAKE_NAME="weeblets-mbp"
 
 echo -e "${BLUE}╔════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║   Nix Darwin Configuration Installer       ║${NC}"
-echo -e "${BLUE}╔════════════════════════════════════════════╗${NC}"
+echo -e "${BLUE}╚════════════════════════════════════════════╝${NC}"
 echo ""
 
 # Function to print status messages

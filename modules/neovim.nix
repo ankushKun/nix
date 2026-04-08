@@ -2,5 +2,5 @@
 
 {
   # Neovim configuration
-  home.file.".config/nvim/init.lua".source = ../configs/shared/nvim-init.lua;
+  home.file.".config/nvim/init.lua".source = ../configs/nvim-init.lua;
 }

@@ -27,15 +27,13 @@ git pull origin main
 
 echo "🔨 Rebuilding Nix configuration..."
 if command -v darwin-rebuild &> /dev/null; then
-    darwin-rebuild switch --flake .
+    darwin-rebuild switch --flake .#weeblets-mbp
 elif command -v home-manager &> /dev/null; then
-    home-manager switch --flake .
+    home-manager switch --flake .#weeblets-mbp
 else
     echo "⚠️  Neither darwin-rebuild nor home-manager found"
     echo "Please rebuild manually with:"
-    echo "  darwin-rebuild switch --flake ~/.config/nix"
-    echo "  OR"
-    echo "  home-manager switch --flake ~/.config/nix"
+    echo "  darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp"
 fi
 
 echo "✅ Restore complete! Configuration updated from GitHub"

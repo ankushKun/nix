@@ -13,7 +13,27 @@
 
   # Environment variables
   home.sessionVariables = {
-    EDITOR = "${pkgs.neovim}/bin/nvim";
-    VISUAL = "${pkgs.neovim}/bin/nvim";
+    EDITOR = "nvim";
+    VISUAL = "nvim";
+    LANG = "en_US.UTF-8";
+    NIXPKGS_ALLOW_UNFREE = "1";
+    HOMEBREW_NO_AUTO_UPDATE = "1";
+    CPPFLAGS = "-I/opt/homebrew/opt/openjdk/include";
   };
+
+  # PATH entries (consolidated from zshrc files)
+  home.sessionPath = [
+    "$HOME/.cargo/bin"
+    "$HOME/go/bin"
+    "$HOME/.local/bin"
+    "/usr/local/sbin"
+    "/opt/homebrew/bin"
+    "/opt/homebrew/opt/openjdk/bin"
+    "/opt/homebrew/opt/openjdk@17/bin"
+    "/usr/local/share/dotnet"
+    "$HOME/.opencode/bin"
+    "/Users/weeblet/.bun/bin"
+    "$HOME/.local/share/solana/install/active_release/bin"
+    "$HOME/.antigravity/antigravity/bin"
+  ];
 }
