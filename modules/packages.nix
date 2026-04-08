@@ -1,21 +1,13 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
-  # System-wide packages (installed at the system level)
-  systemPackages = [
-    pkgs.kitty
-    # pkgs.vscode
-    pkgs.rectangle
-    # pkgs.mas  # Mac App Store CLI
-    pkgs.meslo-lgs-nf
-  ];
-
-  # User packages (installed via Home Manager)
-  userPackages = with pkgs; [
+  home.packages = with pkgs; [
     # Shell plugins
     zsh-powerlevel10k
+    zsh-autosuggestions
+    zsh-syntax-highlighting
 
-    # Rust toolchain (consider using rustup for better version management)
+    # Rust toolchain
     rustup
 
     # Editors
@@ -37,11 +29,11 @@
     # Package managers & runtimes
     bun        # Fast JavaScript runtime & package manager
 
+    # Development tools
     go
-    docker
     docker-compose
-    colima
 
+    # Static site generator
     hugo
   ];
 }

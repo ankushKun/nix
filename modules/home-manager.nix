@@ -1,9 +1,9 @@
 { pkgs, config, ... }:
 
 {
-  # Import common cross-platform configuration
+  # Import configuration modules
   imports = [
-    ./common/home.nix
+    ./home.nix
     ./darwin/gui.nix
   ];
 }

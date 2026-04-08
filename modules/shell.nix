@@ -1,15 +1,11 @@
 { pkgs, lib, config, ... }:
 
-let
-  isDarwin = pkgs.stdenv.isDarwin;
-  isLinux = pkgs.stdenv.isLinux;
-in
 {
-  # Zsh configuration with Oh My Zsh
+  # Zsh configuration
   programs.zsh = {
     enable = true;
     enableCompletion = true;
-    
+
     # Completion caching for faster startup
     completionInit = "autoload -U compinit && compinit -C";
 
@@ -40,7 +36,7 @@ in
       share = true;
     };
 
-    # Load custom zshrc (platform-specific) + optimizations + PATH additions
+    # Load custom zshrc + PATH additions
     initContent = lib.mkMerge [
       # Performance optimizations (loaded early)
       (lib.mkOrder 550 ''
@@ -48,25 +44,18 @@ in
         ZSH_AUTOSUGGEST_MANUAL_REBIND=1
         ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
       '')
-      
+
       # Main configuration
-      (builtins.readFile ../../configs/shared/zshrc +
-       (if isDarwin then builtins.readFile ../../configs/darwin/zshrc-darwin else "") +
-       (lib.optionalString isDarwin ''
+      (builtins.readFile ../configs/shared/zshrc +
+       builtins.readFile ../configs/darwin/zshrc-darwin +
+       ''
          export PATH="/usr/local/share/dotnet:$PATH"
          export PATH="$HOME/.opencode/bin:$PATH"
-       '') +
-         (lib.optionalString isLinux ''
-          export PATH="$HOME/.bun/bin:$PATH"
-          
-          # NVM setup
-          export NVM_DIR="$HOME/.nvm"
-          [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-          [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
-        ''))
+         export PATH="/Users/weeblet/.bun/bin:$PATH"
+       '')
     ];
 
-    # Shell aliases - modern alternatives
+    # Shell aliases
     shellAliases = {
       # Better ls (eza)
       ls = "eza --icons --group-directories-first";
@@ -95,15 +84,12 @@ in
       gco = "git checkout";
       gb = "git branch";
       lg = "lazygit";
-    } // lib.optionalAttrs isDarwin {
-      # Darwin-specific aliases
+
+      # Darwin aliases
       dr = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
       hmr = "home-manager switch --flake ~/.config/nix#weeblets-mbp";
       nix-config = "nvim ~/.config/nix/flake.nix";
       icloud = "cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs";
-    } // lib.optionalAttrs isLinux {
-      # Linux-specific aliases
-      hm = "home-manager switch --flake ~/.config/nix#linux --impure";
     };
   };
 
@@ -112,7 +98,7 @@ in
     enable = true;
     enableZshIntegration = true;
     nix-direnv.enable = true;
-    
+
     config = {
       global = {
         # Reduce startup time by caching
@@ -124,9 +110,9 @@ in
   # Tmux configuration
   programs.tmux = {
     enable = true;
-    extraConfig = builtins.readFile ../../configs/shared/tmux.conf;
+    extraConfig = builtins.readFile ../configs/shared/tmux.conf;
   };
 
   # Link Powerlevel10k config
-  home.file.".p10k.zsh".source = ../../configs/shared/p10k.zsh;
+  home.file.".p10k.zsh".source = ../configs/shared/p10k.zsh;
 }

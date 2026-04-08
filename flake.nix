@@ -45,46 +45,23 @@
         ];
       };
 
-      # Standalone Home Manager configurations
-      homeConfigurations = {
-        # macOS standalone home-manager (configs only, no system packages)
-        # Usage: home-manager switch --flake .#weeblets-mbp
-        "weeblets-mbp" = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            system = "aarch64-darwin";
-            config.allowUnfree = true;
-          };
-          modules = [
-            ./modules/home-manager.nix
-            {
-              home.username = "weeblet";
-              home.homeDirectory = "/Users/weeblet";
-            }
-          ];
+      # Standalone Home Manager configuration
+      # Usage: home-manager switch --flake .#weeblets-mbp
+      homeConfigurations."weeblets-mbp" = home-manager.lib.homeManagerConfiguration {
+        pkgs = import nixpkgs {
+          system = "aarch64-darwin";
+          config.allowUnfree = true;
         };
-
-        # Linux standalone home-manager
-        # Usage: home-manager switch --flake .#linux --impure
-        "linux" = home-manager.lib.homeManagerConfiguration {
-          pkgs = import nixpkgs {
-            system = "x86_64-linux";
-            config.allowUnfree = true;
-          };
-          modules = [
-            ./hosts/linux/default.nix
-            # Add assertion for username
-            {
-              assertions = [{
-                assertion = builtins.getEnv "USER" != "";
-                message = "Username could not be determined. Please run with --impure flag.";
-              }];
-            }
-          ];
-        };
+        modules = [
+          ./modules/home-manager.nix
+          {
+            home.username = "weeblet";
+            home.homeDirectory = "/Users/weeblet";
+          }
+        ];
       };
 
-      # Formatters for 'nix fmt'
+      # Formatter for 'nix fmt'
       formatter.aarch64-darwin = nixpkgs.legacyPackages.aarch64-darwin.nixpkgs-fmt;
-      formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixpkgs-fmt;
     };
 }

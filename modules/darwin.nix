@@ -1,8 +1,5 @@
 { pkgs, ... }:
 
-let
-  packages = import ./packages.nix { inherit pkgs; };
-in
 {
   # Import Darwin-specific system configuration
   imports = [
@@ -19,6 +16,8 @@ in
     allowUnsupportedSystem = true;
   };
 
-  # System packages (GUI apps and macOS-specific tools)
-  environment.systemPackages = packages.systemPackages;
+  # System packages
+  environment.systemPackages = [
+    pkgs.meslo-lgs-nf
+  ];
 }
