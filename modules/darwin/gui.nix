@@ -4,7 +4,6 @@
   # GUI application packages
   home.packages = with pkgs; [
     kitty
-    rectangle
     # Docker for macOS
     docker
     colima

@@ -25,6 +25,7 @@
 
     # Package managers & runtimes
     bun        # Fast JavaScript runtime & package manager
+    pnpm
 
     # Development tools
     go

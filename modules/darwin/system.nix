@@ -32,6 +32,10 @@
       cleanup = "zap";
     };
 
+    casks = [
+      "rectangle"
+    ];
+
     # Mac App Store apps (requires mas)
     masApps = {
       # Add your Mac App Store apps here
