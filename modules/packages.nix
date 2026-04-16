@@ -14,22 +14,23 @@
     neovim
 
     # CLI Tools
-    ripgrep    # Better grep
-    fd         # Better find
-    git        # Version control
-    lazygit    # Git TUI
+    ripgrep # Better grep
+    fd # Better find
+    git # Version control
+    lazygit # Git TUI
     tree-sitter
-    jq         # JSON processor
-    direnv     # Per-directory environments
+    jq # JSON processor
+    direnv # Per-directory environments
     nix-direnv # Faster direnv with Nix
 
     # Package managers & runtimes
-    bun        # Fast JavaScript runtime & package manager
+    bun # Fast JavaScript runtime & package manager
     pnpm
 
     # Development tools
     go
     docker-compose
+    gh # github cli
 
     # Static site generator
     hugo
