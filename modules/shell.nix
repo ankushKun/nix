@@ -38,6 +38,17 @@
 
     # Load custom zshrc
     initContent = lib.mkMerge [
+      # Reload the current Home Manager profile vars for new terminals. This
+      # avoids stale inherited __HM_SESS_VARS_SOURCED values after config syncs.
+      (lib.mkOrder 500 ''
+        unset __HM_SESS_VARS_SOURCED
+        if [ -f "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh" ]; then
+          . "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
+        elif [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
+          . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+        fi
+      '')
+
       # Performance optimizations (loaded early)
       (lib.mkOrder 550 ''
         # Reduce plugin overhead
@@ -78,11 +89,24 @@
       kittyw = "kitty -o hide_window_decorations=no -o background_opacity=1.0";
 
       # Darwin aliases
-      dr = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
+      dr = "home-manager switch --flake ~/.config/nix#weeblets-mbp";
       hmr = "home-manager switch --flake ~/.config/nix#weeblets-mbp";
+      dr-system = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
       nix-config = "nvim ~/.config/nix/flake.nix";
       icloud = "cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs";
     };
+
+    initExtra = ''
+      portkill() {
+        local pid=$(lsof -ti :"$1")
+        if [ -n "$pid" ]; then
+          kill -9 $pid
+          echo "Killed process(es) on port $1: $pid"
+        else
+          echo "No process found on port $1"
+        fi
+      }
+    '';
   };
 
   # Fzf with shell integration (Ctrl+R history, Ctrl+T file finder)

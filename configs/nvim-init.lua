@@ -23,7 +23,7 @@ vim.opt.clipboard = "unnamedplus" -- Use system clipboard
 vim.opt.scrolloff = 8 -- Keep 8 lines above/below cursor
 vim.opt.sidescrolloff = 8 -- Keep 8 columns left/right of cursor
 vim.opt.signcolumn = "yes" -- Always show sign column
-vim.opt.cursorline = true -- Highlight current line
+vim.opt.cursorline = false -- Highlight current line
 vim.opt.termguicolors = true -- Enable 24-bit colors
 vim.opt.updatetime = 250 -- Faster completion
 vim.opt.timeoutlen = 300 -- Faster which-key popup
@@ -308,12 +308,12 @@ require("lazy").setup({
 			require("tokyonight").setup({
 				style = "night", -- Tokyo Night theme (matches Kitty)
 				transparent = false,
-				terminal_colors = false, -- Configure colors for terminal windows
+				terminal_colors = true, -- Configure colors for terminal windows
 				styles = {
 					-- sidebars = "transparent",
 					-- floats = "transparent",
 					comments = { italic = true },
-					keywords = { italic = false },
+					keywords = { italic = true },
 				},
 				-- Override specific colors to match Kitty if needed
 				on_colors = function(colors)

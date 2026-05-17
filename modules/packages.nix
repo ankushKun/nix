@@ -31,6 +31,7 @@
     go
     docker-compose
     gh # github cli
+    home-manager # Apply user config without a full nix-darwin rebuild
 
     # Static site generator
     hugo
