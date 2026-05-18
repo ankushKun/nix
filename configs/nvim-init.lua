@@ -1552,11 +1552,42 @@ require("lazy").setup({
 	{
 		"ahmedkhalf/project.nvim",
 		config = function()
+			local function git_outermost_root(start_dir)
+				if start_dir == "" then
+					start_dir = vim.fn.getcwd()
+				end
+
+				local root = vim.fn.systemlist({ "git", "-C", start_dir, "rev-parse", "--show-toplevel" })[1]
+				if vim.v.shell_error ~= 0 or root == nil or root == "" then
+					return nil
+				end
+
+				while true do
+					local superproject =
+						vim.fn.systemlist({ "git", "-C", root, "rev-parse", "--show-superproject-working-tree" })[1]
+					if vim.v.shell_error ~= 0 or superproject == nil or superproject == "" then
+						return root
+					end
+					root = superproject
+				end
+			end
+
 			require("project_nvim").setup({
 				detection_methods = { "pattern", "lsp" },
 				patterns = { ".git", "Makefile", "package.json", "Cargo.toml", "go.mod" },
 				silent_chdir = false,
 			})
+
+			local project = require("project_nvim.project")
+			local original_get_project_root = project.get_project_root
+			project.get_project_root = function()
+				local git_root = git_outermost_root(vim.fn.expand("%:p:h", true))
+				if git_root ~= nil then
+					return git_root, "git outermost root"
+				end
+
+				return original_get_project_root()
+			end
 
 			-- Integrate with telescope
 			require("telescope").load_extension("projects")
