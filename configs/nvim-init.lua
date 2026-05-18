@@ -73,6 +73,23 @@ local ui_colors = {
 	tab_fg = "#16161e",
 }
 
+local function blend_hex(fg, bg, alpha)
+	local function channel(hex, index)
+		return tonumber(hex:sub(index, index + 1), 16) or 0
+	end
+
+	local function blend_channel(fg_channel, bg_channel)
+		return math.floor((fg_channel * alpha) + (bg_channel * (1 - alpha)) + 0.5)
+	end
+
+	return string.format(
+		"#%02x%02x%02x",
+		blend_channel(channel(fg, 2), channel(bg, 2)),
+		blend_channel(channel(fg, 4), channel(bg, 4)),
+		blend_channel(channel(fg, 6), channel(bg, 6))
+	)
+end
+
 local function apply_kitty_highlights(hl)
 	local function merge_highlight(group, opts)
 		local existing = type(hl[group]) == "table" and hl[group] or {}
@@ -216,20 +233,30 @@ local function apply_kitty_highlights(hl)
 	hl.TroubleIndentFoldClosed = { fg = ui_colors.blue, bg = "NONE" }
 	hl.TroublePreview = { bg = ui_colors.selection }
 
+	local satellite_colors = {
+		blue = blend_hex(ui_colors.blue, ui_colors.bg, 0.5),
+		cyan = blend_hex(ui_colors.cyan, ui_colors.bg, 0.5),
+		green = blend_hex(ui_colors.green, ui_colors.bg, 0.5),
+		yellow = blend_hex(ui_colors.yellow, ui_colors.bg, 0.5),
+		orange = blend_hex(ui_colors.orange, ui_colors.bg, 0.5),
+		red = blend_hex(ui_colors.red, ui_colors.bg, 0.5),
+		purple = blend_hex(ui_colors.purple, ui_colors.bg, 0.5),
+	}
+
 	hl.SatelliteBackground = { bg = "NONE" }
 	hl.SatelliteBar = { bg = "NONE" }
-	hl.SatelliteCursor = { fg = ui_colors.blue, bg = "NONE", bold = true }
-	hl.SatelliteSearch = { fg = ui_colors.yellow, bg = "NONE", bold = true }
-	hl.SatelliteSearchCurrent = { fg = ui_colors.orange, bg = "NONE", bold = true }
-	hl.SatelliteDiagnosticError = { fg = ui_colors.red, bg = "NONE", bold = true }
-	hl.SatelliteDiagnosticWarn = { fg = ui_colors.yellow, bg = "NONE", bold = true }
-	hl.SatelliteDiagnosticInfo = { fg = ui_colors.cyan, bg = "NONE", bold = true }
-	hl.SatelliteDiagnosticHint = { fg = ui_colors.green, bg = "NONE", bold = true }
-	hl.SatelliteGitSignsAdd = { fg = ui_colors.green, bg = "NONE", bold = true }
-	hl.SatelliteGitSignsChange = { fg = ui_colors.cyan, bg = "NONE", bold = true }
-	hl.SatelliteGitSignsDelete = { fg = ui_colors.red, bg = "NONE", bold = true }
-	hl.SatelliteQuickfix = { fg = ui_colors.purple, bg = "NONE", bold = true }
-	hl.SatelliteMark = { fg = ui_colors.cyan, bg = "NONE", bold = true }
+	hl.SatelliteCursor = { fg = satellite_colors.blue, bg = "NONE" }
+	hl.SatelliteSearch = { fg = satellite_colors.yellow, bg = "NONE" }
+	hl.SatelliteSearchCurrent = { fg = satellite_colors.orange, bg = "NONE" }
+	hl.SatelliteDiagnosticError = { fg = satellite_colors.red, bg = "NONE" }
+	hl.SatelliteDiagnosticWarn = { fg = satellite_colors.yellow, bg = "NONE" }
+	hl.SatelliteDiagnosticInfo = { fg = satellite_colors.cyan, bg = "NONE" }
+	hl.SatelliteDiagnosticHint = { fg = satellite_colors.green, bg = "NONE" }
+	hl.SatelliteGitSignsAdd = { fg = satellite_colors.green, bg = "NONE" }
+	hl.SatelliteGitSignsChange = { fg = satellite_colors.cyan, bg = "NONE" }
+	hl.SatelliteGitSignsDelete = { fg = satellite_colors.red, bg = "NONE" }
+	hl.SatelliteQuickfix = { fg = satellite_colors.purple, bg = "NONE" }
+	hl.SatelliteMark = { fg = satellite_colors.cyan, bg = "NONE" }
 end
 
 -- Neovide specific settings
