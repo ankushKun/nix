@@ -6,7 +6,7 @@
 -- Basic Settings
 -- ============================================================================
 vim.opt.number = true -- Show line numbers
-vim.opt.relativenumber = true -- Show relative line numbers
+vim.opt.relativenumber = false -- Keep left gutter to absolute line numbers only
 vim.opt.mouse = "a" -- Enable mouse support
 vim.opt.ignorecase = true -- Case insensitive search
 vim.opt.smartcase = true -- Unless uppercase is used
@@ -28,19 +28,209 @@ vim.opt.termguicolors = true -- Enable 24-bit colors
 vim.opt.updatetime = 250 -- Faster completion
 vim.opt.timeoutlen = 300 -- Faster which-key popup
 vim.opt.undofile = true -- Enable persistent undo
+vim.opt.undolevels = 10000 -- Keep deeper undo history
+vim.opt.autoread = true -- Reload files changed outside Neovim when safe
+vim.opt.confirm = true -- Prompt to save changed buffers instead of failing commands
 vim.opt.backup = false -- Disable backup files
 vim.opt.writebackup = false -- Disable backup before writing
 vim.opt.swapfile = false -- Disable swap files
 vim.opt.splitright = true -- Vertical splits go right
 vim.opt.splitbelow = true -- Horizontal splits go below
+vim.opt.splitkeep = "screen" -- Keep screen position stable when splits change
 vim.opt.showmode = false -- Don't show mode (we have statusline)
 vim.opt.conceallevel = 0 -- Don't hide characters (like in markdown)
 vim.opt.pumheight = 10 -- Popup menu height
 vim.opt.completeopt = "menu,menuone,noselect" -- Better completion experience
+vim.opt.list = false -- Toggle visible whitespace with <leader>tw
+vim.opt.listchars = { tab = "> ", trail = ".", nbsp = "_", extends = ">", precedes = "<" }
+pcall(function()
+	vim.opt.winborder = "rounded"
+end)
 
 -- Set leader key to space
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+
+-- Kitty-matched Tokyo Night palette.
+local ui_colors = {
+	bg = "#101015",
+	surface = "#15161e",
+	surface_alt = "#1a1b26",
+	selection = "#283457",
+	border = "#7aa2f7",
+	border_dim = "#292e42",
+	fg = "#c0caf5",
+	fg_dim = "#a9b1d6",
+	muted = "#545c7e",
+	blue = "#7aa2f7",
+	cyan = "#7dcfff",
+	green = "#9ece6a",
+	yellow = "#e0af68",
+	orange = "#ff9e64",
+	red = "#f7768e",
+	red_dark = "#db4b4b",
+	purple = "#bb9af7",
+	tab_fg = "#16161e",
+}
+
+local function apply_kitty_highlights(hl)
+	local function merge_highlight(group, opts)
+		local existing = type(hl[group]) == "table" and hl[group] or {}
+		hl[group] = vim.tbl_extend("force", existing, opts)
+	end
+
+	local transparent_groups = {
+		"Normal",
+		"NormalNC",
+		"SignColumn",
+		"FoldColumn",
+		"LineNr",
+		"CursorLineNr",
+		"EndOfBuffer",
+		"StatusLine",
+		"StatusLineNC",
+		"WinBar",
+		"WinBarNC",
+		"NvimTreeNormal",
+		"NvimTreeNormalNC",
+		"NvimTreeEndOfBuffer",
+		"NvimTreeVertSplit",
+		"BufferLineFill",
+		"BufferLineBackground",
+		"BufferLineTab",
+		"BufferLineTabClose",
+	}
+
+	for _, group in ipairs(transparent_groups) do
+		merge_highlight(group, { bg = "NONE" })
+	end
+
+	local surface_groups = {
+		"NormalFloat",
+		"FloatTitle",
+		"Pmenu",
+		"WhichKeyFloat",
+		"LazyNormal",
+		"MasonNormal",
+		"TelescopeNormal",
+		"TelescopePromptNormal",
+		"TelescopeResultsNormal",
+		"TelescopePreviewNormal",
+		"TroubleNormal",
+		"TroubleNormalNC",
+		"DiagnosticFloatingError",
+		"DiagnosticFloatingWarn",
+		"DiagnosticFloatingInfo",
+		"DiagnosticFloatingHint",
+		"LspInfoBorder",
+		"NotifyBackground",
+	}
+
+	for _, group in ipairs(surface_groups) do
+		merge_highlight(group, { fg = ui_colors.fg, bg = "NONE" })
+	end
+
+	hl.FloatBorder = { fg = ui_colors.border, bg = "NONE" }
+	hl.FloatTitle = { fg = ui_colors.blue, bg = "NONE", bold = true }
+	hl.WinSeparator = { fg = ui_colors.border_dim, bg = "NONE" }
+	hl.PmenuSel = { fg = ui_colors.tab_fg, bg = ui_colors.blue, bold = true }
+	hl.PmenuSbar = { bg = "NONE" }
+	hl.PmenuThumb = { bg = ui_colors.border_dim }
+	hl.Visual = { bg = ui_colors.selection }
+	hl.Search = { fg = ui_colors.tab_fg, bg = ui_colors.yellow }
+	hl.IncSearch = { fg = ui_colors.tab_fg, bg = ui_colors.orange }
+	hl.CurSearch = { fg = ui_colors.tab_fg, bg = ui_colors.orange }
+	hl.CursorLine = { bg = ui_colors.surface }
+	hl.ColorColumn = { bg = ui_colors.surface }
+
+	hl.TelescopeBorder = { fg = ui_colors.border_dim, bg = "NONE" }
+	hl.TelescopePromptBorder = { fg = ui_colors.blue, bg = "NONE" }
+	hl.TelescopePromptTitle = { fg = ui_colors.blue, bg = "NONE", bold = true }
+	hl.TelescopePreviewTitle = { fg = ui_colors.purple, bg = "NONE", bold = true }
+	hl.TelescopeResultsTitle = { fg = ui_colors.muted, bg = "NONE" }
+	hl.TelescopeSelection = { fg = ui_colors.fg, bg = ui_colors.selection, bold = true }
+	hl.TelescopeMatching = { fg = ui_colors.cyan, bold = true }
+
+	hl.NvimTreeRootFolder = { fg = ui_colors.blue, bold = true }
+	hl.NvimTreeFolderName = { fg = ui_colors.fg_dim }
+	hl.NvimTreeOpenedFolderName = { fg = ui_colors.blue, bold = true }
+	hl.NvimTreeGitDirty = { fg = ui_colors.orange }
+	hl.NvimTreeGitNew = { fg = ui_colors.green }
+	hl.NvimTreeGitDeleted = { fg = ui_colors.red }
+	hl.NvimTreeIndentMarker = { fg = ui_colors.border_dim }
+
+	hl.AlphaHeader = { fg = ui_colors.blue }
+	hl.AlphaButtons = { fg = ui_colors.fg }
+	hl.AlphaShortcut = { fg = ui_colors.cyan, bold = true }
+	hl.AlphaFooter = { fg = ui_colors.muted }
+
+	hl.DiagnosticVirtualTextError = { fg = ui_colors.red, bg = "NONE" }
+	hl.DiagnosticVirtualTextWarn = { fg = ui_colors.yellow, bg = "NONE" }
+	hl.DiagnosticVirtualTextInfo = { fg = ui_colors.cyan, bg = "NONE" }
+	hl.DiagnosticVirtualTextHint = { fg = ui_colors.green, bg = "NONE" }
+	hl.DiagnosticSignError = { fg = ui_colors.red, bg = "NONE" }
+	hl.DiagnosticSignWarn = { fg = ui_colors.yellow, bg = "NONE" }
+	hl.DiagnosticSignInfo = { fg = ui_colors.cyan, bg = "NONE" }
+	hl.DiagnosticSignHint = { fg = ui_colors.green, bg = "NONE" }
+	hl.DiagnosticFloatingError = { fg = ui_colors.red, bg = "NONE" }
+	hl.DiagnosticFloatingWarn = { fg = ui_colors.yellow, bg = "NONE" }
+	hl.DiagnosticFloatingInfo = { fg = ui_colors.cyan, bg = "NONE" }
+	hl.DiagnosticFloatingHint = { fg = ui_colors.green, bg = "NONE" }
+	hl.LspFloatWinNormal = { fg = ui_colors.fg, bg = "NONE" }
+	hl.LspFloatWinBorder = { fg = ui_colors.border, bg = "NONE" }
+	hl.LspSignatureActiveParameter = { fg = ui_colors.tab_fg, bg = ui_colors.yellow, bold = true }
+
+	hl.NotifyBackground = { bg = "NONE" }
+	hl.NotifyERRORBorder = { fg = ui_colors.red, bg = "NONE" }
+	hl.NotifyWARNBorder = { fg = ui_colors.yellow, bg = "NONE" }
+	hl.NotifyINFOBorder = { fg = ui_colors.cyan, bg = "NONE" }
+	hl.NotifyDEBUGBorder = { fg = ui_colors.muted, bg = "NONE" }
+	hl.NotifyTRACEBorder = { fg = ui_colors.purple, bg = "NONE" }
+	hl.NotifyERRORTitle = { fg = ui_colors.red, bg = "NONE", bold = true }
+	hl.NotifyWARNTitle = { fg = ui_colors.yellow, bg = "NONE", bold = true }
+	hl.NotifyINFOTitle = { fg = ui_colors.cyan, bg = "NONE", bold = true }
+	hl.NotifyDEBUGTitle = { fg = ui_colors.muted, bg = "NONE", bold = true }
+	hl.NotifyTRACETitle = { fg = ui_colors.purple, bg = "NONE", bold = true }
+	hl.NotifyERRORIcon = { fg = ui_colors.red, bg = "NONE" }
+	hl.NotifyWARNIcon = { fg = ui_colors.yellow, bg = "NONE" }
+	hl.NotifyINFOIcon = { fg = ui_colors.cyan, bg = "NONE" }
+	hl.NotifyDEBUGIcon = { fg = ui_colors.muted, bg = "NONE" }
+	hl.NotifyTRACEIcon = { fg = ui_colors.purple, bg = "NONE" }
+
+	hl.WhichKey = { fg = ui_colors.cyan }
+	hl.WhichKeyGroup = { fg = ui_colors.blue }
+	hl.WhichKeyDesc = { fg = ui_colors.fg }
+	hl.WhichKeySeparator = { fg = ui_colors.muted }
+	hl.WhichKeyValue = { fg = ui_colors.muted }
+
+	hl.TroubleNormal = { fg = ui_colors.fg, bg = "NONE" }
+	hl.TroubleNormalNC = { fg = ui_colors.fg_dim, bg = "NONE" }
+	hl.TroubleText = { fg = ui_colors.fg_dim, bg = "NONE" }
+	hl.TroubleCount = { fg = ui_colors.blue, bg = "NONE", bold = true }
+	hl.TroubleIndent = { fg = ui_colors.border_dim, bg = "NONE" }
+	hl.TroubleIndentTop = { fg = ui_colors.border_dim, bg = "NONE" }
+	hl.TroubleIndentMiddle = { fg = ui_colors.border_dim, bg = "NONE" }
+	hl.TroubleIndentLast = { fg = ui_colors.border_dim, bg = "NONE" }
+	hl.TroubleIndentWs = { fg = ui_colors.border_dim, bg = "NONE" }
+	hl.TroubleIndentFoldOpen = { fg = ui_colors.blue, bg = "NONE" }
+	hl.TroubleIndentFoldClosed = { fg = ui_colors.blue, bg = "NONE" }
+	hl.TroublePreview = { bg = ui_colors.selection }
+
+	hl.SatelliteBackground = { bg = "NONE" }
+	hl.SatelliteBar = { bg = "NONE" }
+	hl.SatelliteCursor = { fg = ui_colors.blue, bg = "NONE", bold = true }
+	hl.SatelliteSearch = { fg = ui_colors.yellow, bg = "NONE", bold = true }
+	hl.SatelliteSearchCurrent = { fg = ui_colors.orange, bg = "NONE", bold = true }
+	hl.SatelliteDiagnosticError = { fg = ui_colors.red, bg = "NONE", bold = true }
+	hl.SatelliteDiagnosticWarn = { fg = ui_colors.yellow, bg = "NONE", bold = true }
+	hl.SatelliteDiagnosticInfo = { fg = ui_colors.cyan, bg = "NONE", bold = true }
+	hl.SatelliteDiagnosticHint = { fg = ui_colors.green, bg = "NONE", bold = true }
+	hl.SatelliteGitSignsAdd = { fg = ui_colors.green, bg = "NONE", bold = true }
+	hl.SatelliteGitSignsChange = { fg = ui_colors.cyan, bg = "NONE", bold = true }
+	hl.SatelliteGitSignsDelete = { fg = ui_colors.red, bg = "NONE", bold = true }
+	hl.SatelliteQuickfix = { fg = ui_colors.purple, bg = "NONE", bold = true }
+	hl.SatelliteMark = { fg = ui_colors.cyan, bg = "NONE", bold = true }
+end
 
 -- Neovide specific settings
 if vim.g.neovide then
@@ -53,14 +243,14 @@ if vim.g.neovide then
 	vim.g.neovide_padding_right = 5
 	vim.g.neovide_padding_left = 5
 
-	-- Opacity (matching Kitty: 0.90 opacity with blur)
+	-- Opacity (matching Kitty: 0.75 opacity with blur)
 	-- Note: neovide_transparency is deprecated, use neovide_background_color alpha channel instead
 	vim.g.neovide_window_blurred = true
 
 	-- Set background color with alpha channel for transparency
 	-- Format: #RRGGBBAA where AA is alpha (00 = transparent, FF = opaque)
-	-- FF = fully opaque (no transparency)
-	vim.g.neovide_background_color = "#101015FF"
+	-- BF is roughly 75% opacity, matching Kitty's background_opacity.
+	vim.g.neovide_background_color = ui_colors.bg .. "BF"
 
 	-- Floating blur
 	vim.g.neovide_floating_blur_amount_x = 2.0
@@ -154,6 +344,73 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+local function listed_file_buffers()
+	local buffers = {}
+	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+		if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted and vim.bo[buf].buftype == "" then
+			table.insert(buffers, buf)
+		end
+	end
+	return buffers
+end
+
+local function open_fallback_buffer()
+	if pcall(vim.cmd, "Alpha") then
+		return vim.api.nvim_get_current_buf()
+	end
+	vim.cmd("enew")
+	vim.bo.buflisted = false
+	return vim.api.nvim_get_current_buf()
+end
+
+local function close_buffer(bufnr, force)
+	if bufnr == nil or bufnr == 0 then
+		bufnr = vim.api.nvim_get_current_buf()
+	end
+	if not vim.api.nvim_buf_is_valid(bufnr) then
+		return
+	end
+
+	if vim.bo[bufnr].modified and not force then
+		vim.notify("Buffer has unsaved changes. Save it or use <leader>bD to force close.", vim.log.levels.WARN)
+		return
+	end
+
+	local alternate
+	local target_windows = {}
+
+	for _, buf in ipairs(listed_file_buffers()) do
+		if buf ~= bufnr then
+			alternate = buf
+			break
+		end
+	end
+
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		if vim.api.nvim_win_get_buf(win) == bufnr then
+			table.insert(target_windows, win)
+		end
+	end
+
+	if alternate then
+		for _, win in ipairs(target_windows) do
+			vim.api.nvim_win_set_buf(win, alternate)
+		end
+	elseif #target_windows > 0 then
+		local current_win = vim.api.nvim_get_current_win()
+		vim.api.nvim_set_current_win(target_windows[1])
+		local fallback = open_fallback_buffer()
+		for i = 2, #target_windows do
+			vim.api.nvim_win_set_buf(target_windows[i], fallback)
+		end
+		if vim.api.nvim_win_is_valid(current_win) then
+			vim.api.nvim_set_current_win(current_win)
+		end
+	end
+
+	pcall(vim.api.nvim_buf_delete, bufnr, { force = force or false })
+end
+
 -- ============================================================================
 -- Keybindings
 -- ============================================================================
@@ -176,15 +433,11 @@ vim.keymap.set("n", "{", ":bprevious<CR>", { desc = "Previous buffer" })
 
 -- Buffer operations (LunarVim style: <leader>b group>)
 vim.keymap.set("n", "<leader>c", function()
-	local buf = vim.api.nvim_get_current_buf()
-	local buf_info = vim.fn.getbufinfo(buf)
-	if buf_info and buf_info[1] and buf_info[1].changed then
-		vim.notify("Buffer has unsaved changes", vim.log.levels.WARN)
-		return
-	end
-	vim.cmd("bp|bd " .. buf)
+	close_buffer(0, false)
 end, { desc = "Close buffer" })
-vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", { desc = "Delete buffer" })
+vim.keymap.set("n", "<leader>bd", function()
+	close_buffer(0, false)
+end, { desc = "Delete buffer" })
 vim.keymap.set("n", "<leader>ba", ":%bd|e#<CR>", { desc = "Delete all buffers except current" })
 vim.keymap.set("n", "<leader>bD", ":%bd!|e#|bd#<CR>", { desc = "Force delete all buffers except current" })
 
@@ -224,6 +477,10 @@ vim.keymap.set("v", ">", ">gv", { desc = "Indent right (stay in visual)" })
 vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Page down (centered)" })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Page up (centered)" })
 
+-- Fold controls
+vim.keymap.set("n", "fo", "zo", { desc = "Open fold under cursor" })
+vim.keymap.set("n", "fc", "zc", { desc = "Close fold under cursor" })
+
 -- Keep search results centered
 vim.keymap.set("n", "n", "nzzzv", { desc = "Next search result (centered)" })
 vim.keymap.set("n", "N", "Nzzzv", { desc = "Previous search result (centered)" })
@@ -256,15 +513,69 @@ vim.keymap.set("n", "<leader>tf", function()
 	vim.notify("Format on save " .. status, vim.log.levels.INFO)
 end, { desc = "Toggle format on save" })
 
+vim.keymap.set("n", "<leader>tw", function()
+	vim.opt.list = not vim.opt.list:get()
+end, { desc = "Toggle whitespace" })
+
 -- ============================================================================
 -- Auto Commands
 -- ============================================================================
+
+-- Refresh files changed outside Neovim, similar to VS Code/Cursor.
+local external_file_changes = vim.api.nvim_create_augroup("external_file_changes", { clear = true })
+
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+	group = external_file_changes,
+	callback = function()
+		if vim.fn.mode() ~= "c" then
+			vim.cmd("silent! checktime")
+		end
+	end,
+})
+
+vim.api.nvim_create_autocmd("FileChangedShellPost", {
+	group = external_file_changes,
+	callback = function()
+		vim.notify("Reloaded file changed outside Neovim", vim.log.levels.INFO)
+	end,
+})
+
+vim.api.nvim_create_autocmd("CursorHold", {
+	group = vim.api.nvim_create_augroup("diagnostic_float_on_idle", { clear = true }),
+	callback = function()
+		if vim.bo.buftype ~= "" or vim.fn.mode() ~= "n" then
+			return
+		end
+		vim.diagnostic.open_float(nil, {
+			border = "rounded",
+			focus = false,
+			header = { " Diagnostics ", "FloatTitle" },
+			prefix = "● ",
+			source = "always",
+			scope = "cursor",
+		})
+	end,
+})
 
 -- Highlight on yank
 vim.api.nvim_create_autocmd("TextYankPost", {
 	group = vim.api.nvim_create_augroup("highlight_yank", { clear = true }),
 	callback = function()
 		(vim.hl or vim.highlight).on_yank({ timeout = 200 })
+	end,
+})
+
+-- Create missing parent directories when saving new nested files.
+vim.api.nvim_create_autocmd("BufWritePre", {
+	group = vim.api.nvim_create_augroup("auto_create_parent_dirs", { clear = true }),
+	callback = function(event)
+		if event.match:match("^%w%w+://") then
+			return
+		end
+		local dir = vim.fn.fnamemodify(event.match, ":p:h")
+		if dir ~= "" and vim.fn.isdirectory(dir) == 0 then
+			vim.fn.mkdir(dir, "p")
+		end
 	end,
 })
 
@@ -307,27 +618,42 @@ require("lazy").setup({
 		config = function()
 			require("tokyonight").setup({
 				style = "night", -- Tokyo Night theme (matches Kitty)
-				transparent = false,
+				transparent = true,
 				terminal_colors = true, -- Configure colors for terminal windows
 				styles = {
-					-- sidebars = "transparent",
-					-- floats = "transparent",
+					sidebars = "transparent",
+					floats = "transparent",
 					comments = { italic = true },
 					keywords = { italic = true },
 				},
 				-- Override specific colors to match Kitty if needed
 				on_colors = function(colors)
-					-- Keep default Tokyo Night background (#1a1b26)
-					colors.fg = "#c0caf5" -- Matches Kitty foreground
+					colors.bg = ui_colors.bg
+					colors.bg_dark = ui_colors.bg
+					colors.bg_float = ui_colors.surface
+					colors.bg_popup = ui_colors.surface
+					colors.bg_sidebar = ui_colors.bg
+					colors.bg_statusline = ui_colors.bg
+					colors.fg = ui_colors.fg
+					colors.border = ui_colors.border_dim
+					colors.blue = ui_colors.blue
+					colors.cyan = ui_colors.cyan
+					colors.green = ui_colors.green
+					colors.yellow = ui_colors.yellow
+					colors.orange = ui_colors.orange
+					colors.red = ui_colors.red
+					colors.purple = ui_colors.purple
 				end,
 				-- Override highlights for less eye strain
 				on_highlights = function(hl, c)
+					apply_kitty_highlights(hl)
+
 					-- Change JSX/HTML tags from red to purple
-					hl["@tag"] = { fg = "#bb9af7" }
-					hl["@tag.tsx"] = { fg = "#bb9af7" }
-					hl["@tag.javascript"] = { fg = "#bb9af7" }
-					hl["@tag.delimiter"] = { fg = "#565f89" } -- Muted color for < > /
-					hl["@tag.attribute"] = { fg = "#7dcfff" } -- Cyan for attributes
+					hl["@tag"] = { fg = ui_colors.purple }
+					hl["@tag.tsx"] = { fg = ui_colors.purple }
+					hl["@tag.javascript"] = { fg = ui_colors.purple }
+					hl["@tag.delimiter"] = { fg = ui_colors.muted } -- Muted color for < > /
+					hl["@tag.attribute"] = { fg = ui_colors.cyan } -- Cyan for attributes
 				end,
 			})
 			vim.cmd([[colorscheme tokyonight]])
@@ -339,9 +665,37 @@ require("lazy").setup({
 		"nvim-lualine/lualine.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		config = function()
+			local lualine_theme = require("lualine.themes.tokyonight")
+			local mode_accents = {
+				normal = ui_colors.blue,
+				insert = ui_colors.green,
+				visual = ui_colors.purple,
+				replace = ui_colors.red,
+				command = ui_colors.yellow,
+				terminal = ui_colors.cyan,
+			}
+
+			for mode, accent in pairs(mode_accents) do
+				lualine_theme[mode] = lualine_theme[mode] or {}
+				lualine_theme[mode].a = { fg = accent, bg = "NONE", gui = "bold" }
+				lualine_theme[mode].b = { fg = ui_colors.fg, bg = "NONE" }
+				lualine_theme[mode].c = { fg = ui_colors.fg_dim, bg = "NONE" }
+				lualine_theme[mode].x = { fg = ui_colors.fg_dim, bg = "NONE" }
+				lualine_theme[mode].y = { fg = accent, bg = "NONE" }
+				lualine_theme[mode].z = { fg = accent, bg = "NONE", gui = "bold" }
+			end
+			lualine_theme.inactive = {
+				a = { fg = ui_colors.muted, bg = "NONE" },
+				b = { fg = ui_colors.muted, bg = "NONE" },
+				c = { fg = ui_colors.muted, bg = "NONE" },
+				x = { fg = ui_colors.muted, bg = "NONE" },
+				y = { fg = ui_colors.muted, bg = "NONE" },
+				z = { fg = ui_colors.muted, bg = "NONE" },
+			}
+
 			require("lualine").setup({
 				options = {
-					theme = "tokyonight",
+					theme = lualine_theme,
 					icons_enabled = true,
 					component_separators = { left = "|", right = "|" },
 					section_separators = { left = "", right = "" },
@@ -402,15 +756,38 @@ require("lazy").setup({
 		config = function()
 			require("telescope").setup({
 				defaults = {
-					prompt_prefix = "🔍 ",
-					selection_caret = "➜ ",
+					prompt_prefix = "  ",
+					selection_caret = "▸ ",
 					layout_strategy = "horizontal",
 					layout_config = {
 						horizontal = {
 							preview_width = 0.55,
 						},
 					},
+					border = true,
+					borderchars = { "─", "│", "─", "│", "╭", "╮", "╯", "╰" },
+					color_devicons = true,
 					file_ignore_patterns = { "node_modules", ".git/", "dist/", "build/" },
+				},
+				pickers = {
+					find_files = {
+						theme = "dropdown",
+						previewer = false,
+						layout_config = { width = 0.75 },
+					},
+					buffers = {
+						theme = "dropdown",
+						previewer = false,
+						layout_config = { width = 0.7 },
+					},
+					commands = {
+						theme = "dropdown",
+						layout_config = { width = 0.7 },
+					},
+					keymaps = {
+						theme = "dropdown",
+						layout_config = { width = 0.8 },
+					},
 				},
 				extensions = {
 					fzf = {
@@ -440,8 +817,42 @@ require("lazy").setup({
 			vim.keymap.set("n", "<leader>sR", builtin.registers, { desc = "Registers" })
 			vim.keymap.set("n", "<leader>ss", builtin.lsp_document_symbols, { desc = "Search symbols" })
 			vim.keymap.set("n", "<leader>sw", builtin.grep_string, { desc = "Search word under cursor" })
-			vim.keymap.set("n", "<leader>sb", builtin.git_branches, { desc = "Checkout branch" })
+			vim.keymap.set("n", "<leader>sB", builtin.git_branches, { desc = "Checkout branch" })
 			vim.keymap.set("n", "<leader>s,", builtin.git_commits, { desc = "Checkout commit" })
+		end,
+	},
+
+	-- Project-wide search and replace
+	{
+		"nvim-pack/nvim-spectre",
+		dependencies = { "nvim-lua/plenary.nvim" },
+		cmd = "Spectre",
+		keys = {
+			{
+				"<leader>sr",
+				function()
+					require("spectre").open()
+				end,
+				desc = "Search/replace",
+			},
+			{
+				"<leader>sW",
+				function()
+					require("spectre").open_visual({ select_word = true })
+				end,
+				desc = "Search/replace word",
+			},
+			{
+				"<leader>sr",
+				function()
+					require("spectre").open_visual()
+				end,
+				mode = "v",
+				desc = "Search/replace selection",
+			},
+		},
+		config = function()
+			require("spectre").setup()
 		end,
 	},
 
@@ -610,6 +1021,13 @@ require("lazy").setup({
 					diagnostics = "nvim_lsp",
 					show_buffer_close_icons = true,
 					show_close_icon = false,
+					always_show_bufferline = true,
+					close_command = function(bufnum)
+						close_buffer(bufnum, false)
+					end,
+					right_mouse_command = function(bufnum)
+						close_buffer(bufnum, false)
+					end,
 					offsets = {
 						{
 							filetype = "NvimTree",
@@ -619,11 +1037,29 @@ require("lazy").setup({
 						},
 					},
 				},
+				highlights = {
+					fill = { bg = "NONE" },
+					background = { fg = ui_colors.muted, bg = "NONE" },
+					buffer_visible = { fg = ui_colors.fg_dim, bg = "NONE" },
+					buffer_selected = { fg = ui_colors.fg, bg = "NONE", bold = true, italic = false },
+					tab = { fg = ui_colors.muted, bg = "NONE" },
+					tab_selected = { fg = ui_colors.tab_fg, bg = ui_colors.blue, bold = true },
+					separator = { fg = ui_colors.border_dim, bg = "NONE" },
+					separator_visible = { fg = ui_colors.border_dim, bg = "NONE" },
+					separator_selected = { fg = ui_colors.blue, bg = "NONE" },
+					indicator_selected = { fg = ui_colors.blue, bg = "NONE" },
+					modified = { fg = ui_colors.orange, bg = "NONE" },
+					modified_visible = { fg = ui_colors.orange, bg = "NONE" },
+					modified_selected = { fg = ui_colors.orange, bg = "NONE" },
+					duplicate = { fg = ui_colors.muted, bg = "NONE", italic = true },
+					duplicate_selected = { fg = ui_colors.fg_dim, bg = "NONE", italic = true },
+					offset_separator = { fg = ui_colors.border_dim, bg = "NONE" },
+				},
 			})
 		end,
 	},
 
-	-- Alpha dashboard with cat ASCII art
+	-- Alpha dashboard
 	{
 		"goolord/alpha-nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -631,7 +1067,6 @@ require("lazy").setup({
 			local alpha = require("alpha")
 			local dashboard = require("alpha.themes.dashboard")
 
-			-- Custom cat ASCII art
 			dashboard.section.header.val = {
 				[[                                                                   ]],
 				[[            :\     /;               _                              ]],
@@ -648,21 +1083,18 @@ require("lazy").setup({
 				[[                                                                   ]],
 			}
 
-			-- Menu buttons
 			dashboard.section.buttons.val = {
-				dashboard.button("f", "  Find file", ":Telescope find_files <CR>"),
-				dashboard.button("e", "  New file", ":ene <BAR> startinsert <CR>"),
-				dashboard.button("r", "  Recent files", ":Telescope oldfiles <CR>"),
-				dashboard.button("g", "  Search text", ":Telescope live_grep <CR>"),
-				dashboard.button("p", "  Projects", ":Telescope projects <CR>"),
-				dashboard.button("c", "  Config", ":e ~/.config/nvim/init.lua <CR>"),
-				dashboard.button("q", "  Quit", ":qa<CR>"),
+				dashboard.button("f", "f  Find file", ":Telescope find_files <CR>"),
+				dashboard.button("r", "r  Recent files", ":Telescope oldfiles <CR>"),
+				dashboard.button("g", "g  Search text", ":Telescope live_grep <CR>"),
+				dashboard.button("p", "p  Projects", ":Telescope projects <CR>"),
+				dashboard.button("n", "n  New file", ":ene <BAR> startinsert <CR>"),
+				dashboard.button("c", "c  Config", ":e ~/.config/nix/configs/nvim-init.lua <CR>"),
+				dashboard.button("q", "q  Quit", ":qa<CR>"),
 			}
 
-			-- Footer
-			dashboard.section.footer.val = ""
+			dashboard.section.footer.val = "Kitty palette: #101015 / #7aa2f7 / #c0caf5"
 
-			-- Layout
 			dashboard.config.layout = {
 				{ type = "padding", val = 2 },
 				dashboard.section.header,
@@ -704,15 +1136,34 @@ require("lazy").setup({
 				view = {
 					width = 30,
 					side = "left",
+					signcolumn = "yes",
 				},
 				renderer = {
 					group_empty = true,
+					highlight_git = true,
+					highlight_opened_files = "name",
+					indent_width = 2,
 					icons = {
 						show = {
 							file = true,
 							folder = true,
 							folder_arrow = true,
 							git = true,
+						},
+						glyphs = {
+							folder = {
+								arrow_closed = "▸",
+								arrow_open = "▾",
+							},
+							git = {
+								unstaged = "~",
+								staged = "+",
+								unmerged = "=",
+								renamed = "»",
+								untracked = "?",
+								deleted = "_",
+								ignored = ".",
+							},
 						},
 					},
 				},
@@ -722,6 +1173,10 @@ require("lazy").setup({
 				git = {
 					enable = true,
 					ignore = false,
+				},
+				update_focused_file = {
+					enable = true,
+					update_root = true,
 				},
 			})
 
@@ -894,7 +1349,59 @@ require("lazy").setup({
 		"folke/trouble.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		config = function()
-			require("trouble").setup({})
+			require("trouble").setup({
+				auto_preview = false,
+				focus = false,
+				indent_guides = false,
+				max_items = 120,
+				multiline = false,
+				open_no_results = false,
+				win = {
+					type = "split",
+					position = "bottom",
+					size = 10,
+					wo = {
+						foldcolumn = "0",
+						number = false,
+						relativenumber = false,
+						signcolumn = "no",
+						wrap = false,
+						winhighlight = table.concat({
+							"Normal:TroubleNormal",
+							"NormalNC:TroubleNormalNC",
+							"EndOfBuffer:TroubleNormal",
+							"CursorLine:Visual",
+							"WinSeparator:WinSeparator",
+						}, ","),
+					},
+				},
+				preview = {
+					type = "float",
+					border = "rounded",
+					title = " Preview ",
+					title_pos = "center",
+					position = { 0, -2 },
+					size = { width = 0.45, height = 0.35 },
+					zindex = 200,
+				},
+				icons = {
+					indent = {
+						top = "  ",
+						middle = "  ",
+						last = "  ",
+						fold_open = "▾ ",
+						fold_closed = "▸ ",
+						ws = "  ",
+					},
+				},
+				modes = {
+					diagnostics = {
+						groups = {
+							{ "filename", format = "{file_icon} {basename:Title} {count}" },
+						},
+					},
+				},
+			})
 
 			vim.keymap.set("n", "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", { desc = "Diagnostics (Trouble)" })
 			vim.keymap.set(
@@ -904,6 +1411,7 @@ require("lazy").setup({
 				{ desc = "Buffer Diagnostics (Trouble)" }
 			)
 			vim.keymap.set("n", "<leader>xl", "<cmd>Trouble loclist toggle<cr>", { desc = "Location List (Trouble)" })
+			vim.keymap.set("n", "<leader>xp", "<cmd>Trouble diagnostics toggle<cr>", { desc = "Problems" })
 			vim.keymap.set("n", "<leader>xq", "<cmd>Trouble qflist toggle<cr>", { desc = "Quickfix List (Trouble)" })
 		end,
 	},
@@ -1142,9 +1650,11 @@ require("lazy").setup({
 		config = function()
 			local notify = require("notify")
 			notify.setup({
-				stages = "fade_in_slide_out",
+				stages = "slide",
 				timeout = 3000,
-				background_colour = "#000000",
+				background_colour = "NotifyBackground",
+				minimum_width = 36,
+				render = "wrapped-compact",
 				icons = {
 					ERROR = "",
 					WARN = "",
@@ -1169,15 +1679,26 @@ require("lazy").setup({
 			require("dressing").setup({
 				input = {
 					enabled = true,
-					default_prompt = "➤ ",
+					default_prompt = "-> ",
+					border = "rounded",
 					win_options = {
 						winblend = 0,
+						winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder",
 					},
 				},
 				select = {
 					enabled = true,
 					backend = { "telescope", "builtin" },
-					telescope = require("telescope.themes").get_dropdown(),
+					telescope = require("telescope.themes").get_dropdown({
+						winblend = 0,
+					}),
+					builtin = {
+						border = "rounded",
+						win_options = {
+							winblend = 0,
+							winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder",
+						},
+					},
 				},
 			})
 		end,
@@ -1338,8 +1859,14 @@ require("lazy").setup({
 					{ name = "path", priority = 250 },
 				}),
 				window = {
-					completion = cmp.config.window.bordered(),
-					documentation = cmp.config.window.bordered(),
+					completion = cmp.config.window.bordered({
+						border = "rounded",
+						winhighlight = "Normal:Pmenu,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None",
+					}),
+					documentation = cmp.config.window.bordered({
+						border = "rounded",
+						winhighlight = "Normal:NormalFloat,FloatBorder:FloatBorder",
+					}),
 				},
 				formatting = {
 					format = function(entry, vim_item)
@@ -1444,7 +1971,7 @@ require("lazy").setup({
 				floating_window = true,
 				floating_window_above_cur_line = true,
 				hint_enable = true,
-				hint_prefix = "→ ",
+				hint_prefix = "-> ",
 				hi_parameter = "LspSignatureActiveParameter",
 				max_height = 12,
 				max_width = 80,
@@ -1483,6 +2010,7 @@ require("lazy").setup({
 				virtual_text = {
 					prefix = "●",
 					source = "if_many",
+					spacing = 4,
 				},
 				signs = true,
 				underline = true,
@@ -1491,13 +2019,13 @@ require("lazy").setup({
 				float = {
 					border = "rounded",
 					source = "always",
-					header = "",
-					prefix = "",
+					header = { " Diagnostics ", "FloatTitle" },
+					prefix = "● ",
 				},
 			})
 
 			-- Diagnostic signs
-			local signs = { Error = " ", Warn = " ", Hint = " ", Info = " " }
+			local signs = { Error = "●", Warn = "●", Hint = "●", Info = "●" }
 			for type, icon in pairs(signs) do
 				local hl = "DiagnosticSign" .. type
 				vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
@@ -1849,13 +2377,91 @@ require("lazy").setup({
 		end,
 	},
 
+	-- Right-side overview bar for cursor, diagnostics, git hunks, and search.
+	{
+		"lewis6991/satellite.nvim",
+		event = { "BufReadPost", "BufNewFile" },
+		config = function()
+			require("satellite").setup({
+				current_only = true,
+				winblend = 0,
+				zindex = 40,
+				excluded_filetypes = {
+					"alpha",
+					"dashboard",
+					"DiffviewFiles",
+					"lazy",
+					"mason",
+					"NvimTree",
+					"qf",
+					"TelescopePrompt",
+					"Trouble",
+					"toggleterm",
+				},
+				handlers = {
+					cursor = {
+						enable = true,
+						overlap = true,
+						priority = 100,
+						symbols = { "█" },
+					},
+					search = {
+						enable = true,
+						overlap = true,
+						priority = 70,
+						symbols = { "█" },
+					},
+					diagnostic = {
+						enable = true,
+						overlap = true,
+						priority = 80,
+						min_severity = vim.diagnostic.severity.HINT,
+						signs = {
+							error = { "█" },
+							warn = { "█" },
+							info = { "█" },
+							hint = { "█" },
+						},
+					},
+					gitsigns = {
+						enable = true,
+						overlap = false,
+						priority = 30,
+						signs = {
+							add = "█",
+							change = "█",
+							delete = "█",
+						},
+					},
+					marks = {
+						enable = false,
+					},
+					quickfix = {
+						enable = false,
+					},
+				},
+			})
+
+			local enabled = true
+			vim.keymap.set("n", "<leader>tm", function()
+				if enabled then
+					vim.cmd("SatelliteDisable")
+				else
+					vim.cmd("SatelliteEnable")
+				end
+				enabled = not enabled
+			end, { desc = "Toggle overview bar" })
+			vim.keymap.set("n", "<leader>tr", "<cmd>SatelliteRefresh<cr>", { desc = "Refresh overview bar" })
+		end,
+	},
+
 	-- nvim-ufo: better folding using treesitter
 	{
 		"kevinhwang91/nvim-ufo",
 		dependencies = { "kevinhwang91/promise-async" },
 		event = "BufReadPost",
 		config = function()
-			vim.opt.foldcolumn = "1"
+			vim.opt.foldcolumn = "0"
 			vim.opt.foldlevel = 99
 			vim.opt.foldlevelstart = 99
 			vim.opt.foldenable = true
