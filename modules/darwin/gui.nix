@@ -19,7 +19,7 @@
       bold_font = "MesloLGS NF Bold";
       italic_font = "MesloLGS NF Italic";
       bold_italic_font = "MesloLGS NF Bold Italic";
-      font_size = 13;
+      font_size = 14;
       draw_minimal_borders = "yes";
       inactive_text_alpha = "0.6";
       hide_window_decorations = "yes";
