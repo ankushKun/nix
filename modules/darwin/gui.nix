@@ -21,7 +21,7 @@
       bold_italic_font = "MesloLGS NF Bold Italic";
       font_size = 13;
       draw_minimal_borders = "yes";
-      inactive_text_alpha = "0.8";
+      inactive_text_alpha = "0.6";
       hide_window_decorations = "yes";
       tab_fade = "0.5 1";
       background_opacity = "1.0";
