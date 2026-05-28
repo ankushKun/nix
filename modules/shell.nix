@@ -100,7 +100,7 @@
       portkill() {
         local pid=$(lsof -ti :"$1")
         if [ -n "$pid" ]; then
-          kill -9 $pid
+          echo "$pid" | xargs kill -9
           echo "Killed process(es) on port $1: $pid"
         else
           echo "No process found on port $1"
