@@ -22,6 +22,7 @@
     ANDROID_HOME = "$HOME/Library/Android/sdk";
     ANDROID_SDK_ROOT = "$HOME/Library/Android/sdk";
     CPPFLAGS = "-I/opt/homebrew/opt/openjdk/include";
+    PNPM_HOME = "$HOME/.local/share/pnpm";
   };
 
   # PATH entries (consolidated from zshrc files)
@@ -42,5 +43,6 @@
     "/Users/weeblet/.bun/bin"
     "$HOME/.local/share/solana/install/active_release/bin"
     "$HOME/.antigravity/antigravity/bin"
+    "$PNPM_HOME"
   ];
 }
