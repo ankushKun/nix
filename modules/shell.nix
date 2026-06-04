@@ -42,10 +42,10 @@
       # avoids stale inherited __HM_SESS_VARS_SOURCED values after config syncs.
       (lib.mkOrder 500 ''
         unset __HM_SESS_VARS_SOURCED
-        if [ -f "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh" ]; then
-          . "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
-        elif [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
+        if [ -f "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh" ]; then
           . "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
+        elif [ -f "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh" ]; then
+          . "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
         fi
       '')
 
@@ -89,9 +89,8 @@
       kittyw = "kitty -o hide_window_decorations=no -o background_opacity=1.0";
 
       # Darwin aliases
-      dr = "home-manager switch --flake ~/.config/nix#weeblets-mbp";
+      dr = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
       hmr = "home-manager switch --flake ~/.config/nix#weeblets-mbp";
-      dr-system = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
       nix-config = "nvim ~/.config/nix/flake.nix";
       icloud = "cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs";
     };
