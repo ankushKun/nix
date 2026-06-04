@@ -88,6 +88,9 @@
       sshk = "kitty +kitten ssh";
       kittyw = "kitty -o hide_window_decorations=no -o background_opacity=1.0";
 
+      # Nix ad-hoc aliases (no install)
+      ns = "nix search nixpkgs";           # search (use nsx for filtered)
+
       # Darwin aliases
       dr = "sudo darwin-rebuild switch --flake ~/.config/nix#weeblets-mbp";
       hmr = "home-manager switch --flake ~/.config/nix#weeblets-mbp";
@@ -96,6 +99,11 @@
     };
 
     initExtra = ''
+      # Nix ad-hoc functions (no install)
+      nx() { nix run "nixpkgs#$1" -- "''${@:2}"; }
+      nsh() { nix shell "nixpkgs#$1" -- "''${@:2}"; }
+      nsx() { nix search nixpkgs "$@" | rg -v '\.(python|haskell|ocaml|ruby|nodePackages|lua|perl|rust|kde|kodi|mpvScripts|home-assistant)[^.]+\.'; }
+
       portkill() {
         local pid=$(lsof -ti :"$1")
         if [ -n "$pid" ]; then
