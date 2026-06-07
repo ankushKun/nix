@@ -102,6 +102,7 @@
       # Nix ad-hoc functions (no install)
       nx() { nix run "nixpkgs#$1" -- "''${@:2}"; }
       nsh() { nix shell "nixpkgs#$1" -- "''${@:2}"; }
+      ngo() { nix shell nixpkgs#go -c go "$@"; }
       nsx() { nix search nixpkgs "$@" | rg -v '\.(python|haskell|ocaml|ruby|nodePackages|lua|perl|rust|kde|kodi|mpvScripts|home-assistant)[^.]+\.'; }
 
       portkill() {
