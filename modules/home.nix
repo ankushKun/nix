@@ -6,6 +6,7 @@
     ./neovim.nix
     ./packages.nix
     ./shell.nix
+    ./yazi.nix
   ];
 
   # Home Manager needs a bit of information about you and the paths it should manage
