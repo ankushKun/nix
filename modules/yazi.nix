@@ -34,6 +34,7 @@
       p7zip
       jq
       unar
+      glow
     ];
 
     settings = lib.importTOML ../configs/yazi/yazi.toml;
@@ -46,6 +47,11 @@
     # is called from init.lua. Also wired up as a fetcher in
     # yazi.toml's `plugin.prepend_fetchers` block.
     plugins.git = pkgs.yaziPlugins.git;
+    # Patch glow.yazi: replace deprecated :args() with :arg() chains
+    # See https://github.com/sxyazi/yazi/pull/2752
+    plugins.glow = pkgs.yaziPlugins.glow.overrideAttrs (old: {
+      patches = (old.patches or []) ++ [ ../configs/yazi/patches/glow-args-to-arg.patch ];
+    });
   };
 
   # Syntect theme used by yazi's code previewer. Not handled by the

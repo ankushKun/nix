@@ -17,6 +17,10 @@ prepend_keymap = [
 
   # Open hovered file with system default app.
   { on = "<C-o>",      run = "open --hovered",      desc = "Open with default app" },
+
+  # Scroll markdown preview (glow.yazi plugin).
+  { on = "<C-e>",      run = "seek 5",              desc = "Scroll preview down" },
+  { on = "<C-y>",      run = "seek -5",             desc = "Scroll preview up" },
 ]
 
 [input]

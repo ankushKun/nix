@@ -19,11 +19,11 @@ scrolloff    = 5
 mouse_events = ["click", "scroll", "touch", "move"]
 
 [preview]
-tab_size     = 2
-max_width    = 1000
-max_height   = 1000
-image_filter = "lanczos3"
-image_quality = 75
+tab_size      = 2
+max_width     = 2000
+max_height    = 2000
+image_filter  = "lanczos3"
+image_quality = 90
 
 [opener]
 edit = [
@@ -58,6 +58,9 @@ preload_workers = 2
 # fetcher for both files and directories. The `id` field is required
 # on yazi <= 26.1.22 and harmless on newer versions.
 [plugin]
+prepend_previewers = [
+  { name = "*.md", run = "glow" },
+]
 prepend_fetchers = [
   { id = "git", url = "*",  run = "git", group = "git" },
   { id = "git", url = "*/", run = "git", group = "git" },

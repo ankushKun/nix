@@ -35,5 +35,8 @@
 
     # Static site generator
     hugo
+
+    # Terminal markdown renderer (used by yazi for .md preview)
+    glow
   ];
 }
