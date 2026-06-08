@@ -24,8 +24,8 @@
       inactive_text_alpha = "0.6";
       hide_window_decorations = "yes";
       tab_fade = "0.5 1";
-      background_opacity = "1.0";
-      background_blur = 5;
+      background_opacity = "0.85";
+      background_blur = 35;
       macos_window_resizable = "yes";
     };
     # Color scheme (Tokyo Night) loaded from file
