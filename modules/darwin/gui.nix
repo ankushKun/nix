@@ -4,6 +4,7 @@
   # GUI application packages
   home.packages = with pkgs; [
     kitty # Terminal emulator
+    monitorcontrol # External monitor brightness & volume control
   ];
 
   # Kitty configuration
