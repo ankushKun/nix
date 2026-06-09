@@ -29,11 +29,19 @@
     onActivation = {
       autoUpdate = true;
       upgrade = true;
+      cleanup = "none";
     };
 
     casks = [
-      "android-studio"
-      "rectangle"
+      "rectangle" # Window management
+      "tailscale-app" # Mesh VPN
+      "helium-browser" # Privacy-focused browser
+      "mac-mouse-fix" # Mouse gesture utility
+      "handbrake-app" # Video transcoder
+      "macs-fan-control" # Fan control utility
+      "the-unarchiver" # Archive extraction utility
+      "appcleaner" # Uninstall unwanted apps
+      "vlc" # Media player
     ];
 
     # Mac App Store apps (requires mas)

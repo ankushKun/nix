@@ -3,10 +3,7 @@
 {
   # GUI application packages
   home.packages = with pkgs; [
-    kitty
-    # Docker for macOS
-    docker
-    colima
+    kitty # Terminal emulator
   ];
 
   # Kitty configuration

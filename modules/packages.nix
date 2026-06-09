@@ -30,6 +30,8 @@
     # Development tools
     go
     docker-compose
+    docker # Docker CLI
+    colima # Container runtime
     gh # github cli
     home-manager # Apply user config without a full nix-darwin rebuild
 

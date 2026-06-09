@@ -58,6 +58,25 @@
 
       # Main configuration (p10k, ascii art, nvm lazy-loading)
       (builtins.readFile ../configs/zshrc)
+
+      # Nix ad-hoc functions and utilities
+      (lib.mkOrder 600 ''
+        nx() { nix run "nixpkgs#$1" -- "''${@:2}"; }
+        nsh() { nix shell "nixpkgs#$1" -- "''${@:2}"; }
+        ninstall() { nix profile install "nixpkgs#$1"; }
+        ngo() { nix shell nixpkgs#go -c go "$@"; }
+        nsx() { nix search nixpkgs "$@" | rg -v '\.(python|haskell|ocaml|ruby|nodePackages|lua|perl|rust|kde|kodi|mpvScripts|home-assistant)[^.]+\.'; }
+
+        portkill() {
+          local pid=$(lsof -ti :"$1")
+          if [ -n "$pid" ]; then
+            echo "$pid" | xargs kill -9
+            echo "Killed process(es) on port $1: $pid"
+          else
+            echo "No process found on port $1"
+          fi
+        }
+      '')
     ];
 
     # Shell aliases
@@ -97,24 +116,6 @@
       nix-config = "nvim ~/.config/nix/flake.nix";
       icloud = "cd ~/Library/Mobile\\ Documents/com~apple~CloudDocs";
     };
-
-    initExtra = ''
-      # Nix ad-hoc functions (no install)
-      nx() { nix run "nixpkgs#$1" -- "''${@:2}"; }
-      nsh() { nix shell "nixpkgs#$1" -- "''${@:2}"; }
-      ngo() { nix shell nixpkgs#go -c go "$@"; }
-      nsx() { nix search nixpkgs "$@" | rg -v '\.(python|haskell|ocaml|ruby|nodePackages|lua|perl|rust|kde|kodi|mpvScripts|home-assistant)[^.]+\.'; }
-
-      portkill() {
-        local pid=$(lsof -ti :"$1")
-        if [ -n "$pid" ]; then
-          echo "$pid" | xargs kill -9
-          echo "Killed process(es) on port $1: $pid"
-        else
-          echo "No process found on port $1"
-        fi
-      }
-    '';
   };
 
   # Fzf with shell integration (Ctrl+R history, Ctrl+T file finder)
