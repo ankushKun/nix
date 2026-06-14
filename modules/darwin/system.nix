@@ -42,6 +42,8 @@
       "the-unarchiver" # Archive extraction utility
       "appcleaner" # Uninstall unwanted apps
       "vlc" # Media player
+      "kitty" # Terminal emulator
+      "monitorcontrol" # External monitor brightness & volume control
     ];
 
     # Mac App Store apps (requires mas)
